@@ -32,3 +32,8 @@ section {
 #extension-input {
     height: 25rem;
 }
+
+.extension-buttons {
+    margin-top: 1rem;
+    text-align: right;
+}

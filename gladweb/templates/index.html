@@ -95,8 +95,8 @@
                         </div>
                     </section>
 
-                    <section>
-                        <div class="row" id="extensions">
+                    <section id="extensions">
+                        <div class="row">
                             <div class="twelve columns">
                                 <label for="api-input">Extensions</label>
                                 <select class="u-full-width" name="extensions" id="extension-input" multiple>
@@ -105,6 +105,13 @@
                                         <option value="{{ extension.id }}" data-specification="{{ extension.specification }}" data-api="{{ group.list|join(' ', attribute='api') }}">{{ extension.name }}</option>
                                     {%-  endfor %}
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="row extension-buttons">
+                            <div class="offset-by-six six columns">
+                                <a class="button extensions-add-all" href="javascript:void(0)">Add all</a>
+                                <a class="button extensions-remove-all" href="javascript:void(0)">Remove all</a>
                             </div>
                         </div>
                     </section>

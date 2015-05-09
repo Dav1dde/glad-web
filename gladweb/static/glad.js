@@ -68,6 +68,8 @@ function selection_update(event) {
 $(function () {
     $('#specification-input').change(selection_update);
     $('#api').find('select').change(selection_update);
+    $('.extensions-add-all').click(function() { $('#extensions select').multiSelect('select_all'); })
+    $('.extensions-remove-all').click(function() { $('#extensions select').multiSelect('deselect_all'); })
 
     $('#extensions select').multiSelect({
         selectableHeader: "<input type='text' class='search-input u-full-width' autocomplete='off' placeholder='Search'>",
