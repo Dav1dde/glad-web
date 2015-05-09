@@ -16,7 +16,7 @@ SPECIFICATIONS = [
 
 Profile = namedtuple('Profile', ['id', 'name', 'specification'])
 PROFILES = [
-    Profile('core', 'Core', 'gl'), Profile('compatibility', 'Compatibility', 'gl')
+    Profile('compatibility', 'Compatibility', 'gl'), Profile('core', 'Core', 'gl')
 ]
 
 Api = namedtuple('Api', ['id', 'name', 'specification', 'versions', 'default'])
