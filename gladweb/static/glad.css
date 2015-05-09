@@ -1,0 +1,34 @@
+
+
+@media (min-width: 550px) {
+    .header {
+        margin-top: 3rem;
+    }
+}
+
+.header h3 {
+    border-bottom: 1px solid grey;
+    margin-bottom: 0.5rem;
+}
+
+.header {
+    margin-bottom: 5rem;
+}
+
+section h6 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+section {
+    margin-bottom: 2rem;
+}
+
+#error {
+    color: red;
+}
+
+#extension-input {
+    height: 25rem;
+}

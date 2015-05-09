@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% block head %}
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+
+            <meta name="description" content="Web generator for the Glad tool">
+
+            <title>{% block title %}{{ config.title }}{% endblock %}</title>
+            <script src="{{ url_for('static', filename='jquery-1.11.2.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='jquery.quicksearch.js') }}"></script>
+            <script src="{{ url_for('static', filename='jquery.multi-select.js') }}"></script>
+            <script src="{{ url_for('static', filename='glad.js') }}"></script>
+
+            <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+            <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='multi-select.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
+        {% endblock %}
+    </head>
+
+    <body>
+        <div class="container">
+            <header class="header">
+                <h3>Glad</h3><h5>Multi-Language GL/GLES/EGL/GLX/WGL Loader-Generator based on the official specs.</h5>
+            </header>
+
+            <main>
+                {% set messages = get_flashed_messages(category_filter=['error']) %}
+                {% if messages %}
+                <section id="error">
+                    <div class="row">
+                        <h6>Error:</h6>
+                        {% for message in messages %}
+                        <div class="twelve columns">
+                            {{  message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <form action="generate" method="POST">
+                    <section>
+                        <div class="row">
+                            <div class="six columns" id="language">
+                                <label for="lang-input">Language</label>
+                                <select class="u-full-width" name="language" id="lang-input">
+                                    {% for language in languages -%}
+                                        <option value="{{ language.id }}"> {{ language.name }}</option>
+                                    {%-  endfor %}
+                                </select>
+                            </div>
+
+                            <div class="six columns" id="specification">
+                                <label for="specification-input">Specification</label>
+                                <select class="u-full-width" name="specification" id="specification-input">
+                                    {%  for specification in specifications -%}
+                                        <option value="{{ specification.id }}" data->{{ specification.name }}</option>
+                                    {%-  endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <div class="row">
+                            <div class="six columns" id="api">
+                                <label for="api-input">API</label>
+                                {%  for api in apis|sort(attribute='name') -%}
+                                <div class="row" data-specification="{{ api.specification }}">
+                                    <div class="one column"></div>
+                                    <div class="two columns"><label for="api-input-{{ api.id }}">{{ api.name }}</label></div>
+                                    <div class="nine columns">
+                                        <select class="u-full-width" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
+                                            {% for version in api.versions -%}
+                                                <option value="{{ api.id }}={{ version.id }}" {{ 'selected' if api.default == version.id }}>{{ version.name }}</option>
+                                            {%- endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {%- endfor %}
+                            </div>
+
+                            <div class="six columns" id="profile">
+                                <label for="profile-input">Profile</label>
+                                <select class="u-full-width" name="profile" id="profile-input">
+                                    {%  for profile in profiles -%}
+                                        <option value="{{ profile.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
+                                    {%-  endfor %}
+                                    <option class="empty-option" disabled hidden value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <div class="row" id="extensions">
+                            <div class="twelve columns">
+                                <label for="api-input">Extensions</label>
+                                <select class="u-full-width" name="extensions" id="extension-input" multiple>
+                                    {%  for group in extensions|sort(attribute='name')|groupby('id') -%}
+                                        {%-  set extension = group.list|first -%}
+                                        <option value="{{ extension.id }}" data-specification="{{ extension.specification }}" data-api="{{ group.list|join(' ', attribute='api') }}">{{ extension.name }}</option>
+                                    {%-  endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <div class="row" id="options">
+                            <label for="profile-input">Options</label>
+                            <div class="six columns">
+                                <input type="checkbox" name="loader" id="loader-input" checked>
+                                <span class="&nbsp;label-body">Generate a loader</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <input class="button u-pull-right" type="submit" value="Generate">
+                    </section>
+                </form>
+            </main>
+        </div>
+    </body>
+</html>
