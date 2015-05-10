@@ -38,13 +38,14 @@ function selection_update(event) {
     var specification = $('#specification-input').val();
 
     //$('[data-api]').removeAttr('hidden').removeAttr('disabled');
+    $('#extensions select').multiSelect('deselect_all');
     show_only_specification(specification);
 
     var apis = [];
     $('#api').find('[data-specification="' + specification + '"]').each(function (index, value) {
         var select = $(value).find('select');
 
-        if (!select.val().endsWith('none')) {
+        if (select.val() && !select.val().endsWith('none')) {
             apis.push(select.data('api'));
         }
     });

@@ -33,6 +33,10 @@ section {
     height: 25rem;
 }
 
+.ms-container [hidden] {
+    display: none !important;
+}
+
 .extension-buttons {
     margin-top: 1rem;
     text-align: right;

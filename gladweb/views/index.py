@@ -32,13 +32,13 @@ def validate_form():
     loader = request.form.get('loader') is not None
 
     if language not in (l.id for l in g.metadata.languages):
-        raise ValueError('Invalid language')
+        raise ValueError('Invalid language "{0}"'.format(language))
 
     if specification not in (s.id for s in g.metadata.specifications):
-        raise ValueError('Invalid specification')
+        raise ValueError('Invalid specification "{0}"'.format(specification))
 
     if profile not in (p.id for p in g.metadata.profiles):
-        raise ValueError('Invalid profile')
+        raise ValueError('Invalid profile "{0}"'.format(profile))
 
     apis_parsed = dict()
     for api in apis:
@@ -48,7 +48,9 @@ def validate_form():
         apis_parsed[name] = Version(*map(int, version.split('.')))
 
     if len(apis_parsed) == 0:
-        raise ValueError('No API selected')
+        raise ValueError(
+            'No API for specification selected'.format(specification)
+        )
 
     return language, specification, profile, apis_parsed, extensions, loader
 

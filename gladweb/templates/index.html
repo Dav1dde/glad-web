@@ -75,7 +75,7 @@
                                     <div class="one column"></div>
                                     <div class="two columns"><label for="api-input-{{ api.id }}">{{ api.name }}</label></div>
                                     <div class="nine columns">
-                                        <select class="u-full-width" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
+                                        <select class="u-full-width" data-specification="{{ api.specification }}" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
                                             {% for version in api.versions -%}
                                                 <option value="{{ api.id }}={{ version.id }}" {{ 'selected' if api.default == version.id }}>{{ version.name }}</option>
                                             {%- endfor %}
