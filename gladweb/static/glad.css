@@ -37,3 +37,14 @@ section {
     margin-top: 1rem;
     text-align: right;
 }
+
+#submit {
+    text-align: right;
+}
+
+footer {
+    border-top: 1px solid grey;
+    text-align: right;
+    font-size: 80%;
+    text-transform: uppercase;
+}

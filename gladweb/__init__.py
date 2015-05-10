@@ -1,5 +1,6 @@
 from flask import Flask, g
 from gladweb.metadata import Metadata
+import gladweb.util
 
 
 def create_application():
@@ -16,5 +17,7 @@ def create_application():
 
     from gladweb.views.index import index
     app.register_blueprint(index)
+
+    app.jinja_env.filters['pretty_date'] = gladweb.util.pretty_date
 
     return app

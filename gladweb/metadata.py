@@ -1,5 +1,6 @@
 from collections import OrderedDict, namedtuple
 from glad.spec import SPECS
+import time
 import json
 
 
@@ -50,6 +51,8 @@ class Metadata(object):
         self.apis = list()
         self.extensions = list()
 
+        self.created = None
+
         if not self.cache.exists('metadata.json'):
             self.write_metadata()
         else:
@@ -67,6 +70,7 @@ class Metadata(object):
             versions = [Version(*v) for v in api[3]]
             self.apis.append(Api(api[0], api[1], api[2], versions, api[4]))
         self.extensions = [Extension(*ext) for ext in data['extensions']]
+        self.created = data['created']
 
     def write_metadata(self):
         for specification in self.specifications:
@@ -88,6 +92,8 @@ class Metadata(object):
                 for name, extension in extensions.items():
                     self.extensions.append(Extension(name, name, specification.id, api))
 
+        self.created = time.time()
+
         with self.cache.open('metadata.json', 'w') as f:
             json.dump(self.as_dict(), f)
 
@@ -97,5 +103,6 @@ class Metadata(object):
             'specifications': self.specifications,
             'profiles': self.profiles,
             'apis': self.apis,
-            'extensions': self.extensions
+            'extensions': self.extensions,
+            'created': self.created
         }

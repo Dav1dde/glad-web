@@ -44,7 +44,7 @@
                 {% endif %}
 
                 <form action="generate" method="POST">
-                    <section>
+                    <section id="language-specification">
                         <div class="row">
                             <div class="six columns" id="language">
                                 <label for="lang-input">Language</label>
@@ -66,7 +66,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="api-profile">
                         <div class="row">
                             <div class="six columns" id="api">
                                 <label for="api-input">API</label>
@@ -118,8 +118,8 @@
                         </div>
                     </section>
 
-                    <section>
-                        <div class="row" id="options">
+                    <section id="options">
+                        <div class="row">
                             <label for="profile-input">Options</label>
                             <div class="six columns">
                                 <input type="checkbox" name="loader" id="loader-input" checked>
@@ -128,11 +128,15 @@
                         </div>
                     </section>
 
-                    <section>
-                        <input class="button u-pull-right" type="submit" value="Generate">
+                    <section id="submit">
+                        <input class="button" type="submit" value="Generate">
                     </section>
                 </form>
             </main>
+
+            <footer>
+                Specifications last updated: {{ created|pretty_date }}
+            </footer>
         </div>
     </body>
 </html>
