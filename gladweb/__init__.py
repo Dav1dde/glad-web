@@ -38,6 +38,15 @@ def setup_logging():
     root_logger.setLevel(logging.DEBUG)
 
 
+def get_glad_version():
+    try:
+        import pkg_resources
+    except ImportError:
+        return 'Unknown'
+
+    return pkg_resources.get_distribution('glad').version
+
+
 def create_application(debug=False, verbose=False):
     """
     Creates fully configured flask application
@@ -67,5 +76,6 @@ def create_application(debug=False, verbose=False):
     app.register_blueprint(index)
 
     app.jinja_env.filters['pretty_date'] = gladweb.util.pretty_date
+    app.jinja_env.globals.update(get_glad_version=get_glad_version)
 
     return app
