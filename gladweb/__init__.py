@@ -76,6 +76,6 @@ def create_application(debug=False, verbose=False):
     app.register_blueprint(index)
 
     app.jinja_env.filters['pretty_date'] = gladweb.util.pretty_date
-    app.jinja_env.globals.update(get_glad_version=get_glad_version)
+    app.jinja_env.globals.update(glad_version=get_glad_version())
 
     return app
