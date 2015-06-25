@@ -6,7 +6,8 @@ import json
 
 Language = namedtuple('Language', ['id', 'name'])
 LANGUAGES = [
-    Language('c', 'C/C++'), Language('d', 'D'), Language('volt', 'Volt')
+    Language('c', 'C/C++'), Language('c-debug', 'C/C++ Debug'),
+    Language('d', 'D'), Language('volt', 'Volt')
 ]
 
 Specification = namedtuple('Specification', ['id', 'name'])

@@ -72,19 +72,20 @@ def glad_generate():
     if spec.NAME == 'gl':
         spec.profile = profile
 
-    mod = importlib.import_module('glad.lang.{0}'.format(language))
+    generator_cls, loader_cls = glad.lang.get_generator(
+        language, spec.NAME.lower()
+    )
 
-    try:
-        loader_cls = getattr(mod, '{0}Loader'.format(spec.NAME.upper()))
-        loader = loader_cls()
-        loader.disabled = not loader_enabled
-    except KeyError:
-        raise ValueError('API/Spec not supported')
+    if loader_cls is None:
+        raise ValueError('API/Spec not yet supported')
+
+    loader = loader_cls()
+    loader.disabled = not loader_enabled
 
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
     directory = tempfile.mkdtemp()
-    with mod.Generator(directory, spec, apis, loader) as generator:
+    with generator_cls(directory, spec, apis, loader) as generator:
         generator.generate(extensions)
 
     try:
