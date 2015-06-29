@@ -38,7 +38,7 @@ function selection_update(event) {
     var specification = $('#specification-input').val();
 
     //$('[data-api]').removeAttr('hidden').removeAttr('disabled');
-    $('#extensions select').multiSelect('deselect_all');
+    $('#extensions').find('select').multiSelect('deselect_all');
     show_only_specification(specification);
 
     var apis = [];
@@ -69,10 +69,10 @@ function selection_update(event) {
 $(function () {
     $('#specification-input').change(selection_update);
     $('#api').find('select').change(selection_update);
-    $('.extensions-add-all').click(function() { $('#extensions select').multiSelect('select_all'); })
-    $('.extensions-remove-all').click(function() { $('#extensions select').multiSelect('deselect_all'); })
+    $('.extensions-add-all').click(function() { $('#extensions').find('select').multiSelect('select_all'); });
+    $('.extensions-remove-all').click(function() { $('#extensions').find('select').multiSelect('deselect_all'); });
 
-    $('#extensions select').multiSelect({
+    $('#extensions').find('select').multiSelect({
         selectableHeader: "<input type='text' class='search-input u-full-width' autocomplete='off' placeholder='Search'>",
         selectionHeader: "<input type='text' class='search-input  u-full-width' autocomplete='off' placeholder='Search'>",
         afterInit: function (ms) {
@@ -109,4 +109,6 @@ $(function () {
     });
 
     selection_update();
+
+    $('#lang-input').focus();
 });
