@@ -61,7 +61,6 @@ def create_application(debug=False, verbose=False):
 
     app = Flask(__name__)
     app.config.from_object('gladweb.config')
-    app.config['METADATA'] = Metadata(app.config['CACHE'])
     app.debug = debug
 
     if verbose or (not app.debug and verbose is None):
@@ -70,7 +69,7 @@ def create_application(debug=False, verbose=False):
     @app.before_request
     def before_request():
         g.cache = app.config['CACHE']
-        g.metadata = app.config['METADATA']
+        g.metadata = Metadata(g.cache)
 
     from gladweb.views.index import index
     app.register_blueprint(index)

@@ -3,7 +3,11 @@
 # ---
 
 import os
-import string
+import gladweb.cache
+
+
+base_path = os.path.abspath(os.path.join(os.path.split(__file__)[0], '..'))
+
 
 # ---
 # Flask
@@ -11,6 +15,13 @@ import string
 # This key MUST be changed before you make a site public, as it is used
 # to sign the secure cookies used for sessions.
 SECRET_KEY = 'ChangeMeOrGetHacked'
+
+
+# ---
+# Glad Web
+# ---
+# A cache, which will be used to store/retrieve various files.
+CACHE = gladweb.cache.FileCache(os.path.join(base_path, 'cache'))
 
 
 try:

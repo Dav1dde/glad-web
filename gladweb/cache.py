@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 import string
 import sys
 import werkzeug
@@ -26,6 +27,14 @@ class FileCache(object):
         self.path = os.path.abspath(path)
 
         self._allowed_chars = string.ascii_letters + string.digits
+
+    def clear(self):
+        for name in os.listdir(self.path):
+            path = os.path.join(self.path, name)
+            if os.path.isfile(path) or os.path.islink(path):
+                os.remove(path)
+            else:
+                shutil.rmtree(path)
 
     def get_path(self, filename):
         filename = werkzeug.utils.secure_filename(filename)

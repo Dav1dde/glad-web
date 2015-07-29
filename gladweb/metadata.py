@@ -55,7 +55,7 @@ class Metadata(object):
         self.created = None
 
         if not self.cache.exists('metadata.json'):
-            self.write_metadata()
+            self.refresh_metadata()
         else:
             self.read_metadata()
 
@@ -73,7 +73,10 @@ class Metadata(object):
         self.extensions = [Extension(*ext) for ext in data['extensions']]
         self.created = data['created']
 
-    def write_metadata(self):
+    def refresh_metadata(self):
+        self.apis = list()
+        self.extensions = list()
+
         for specification in self.specifications:
             with self.cache.open_specification(specification.id) as f:
                 cls = SPECS[specification.id]
