@@ -1,5 +1,3 @@
-
-
 @media (min-width: 550px) {
     .header {
         margin-top: 3rem;
@@ -51,3 +49,101 @@ footer {
     font-size: 80%;
     text-transform: uppercase;
 }
+
+/* Auto Index */
+
+.aidx a:link, .aidx a:visited {
+    text-decoration: none;
+}
+
+.aidx a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb {
+    padding: 0;
+}
+
+.breadcrumb a {
+    margin: 0;
+    font-size: 12px;
+}
+
+.breadcrumb img {
+  vertical-align: middle;
+}
+
+.breadcrumb .sep {
+    color: #bbb;
+}
+
+.breadcrumb h1 {
+    font-size: 12px;
+    font-weight: normal;
+    padding: 5px;
+    margin: 0;
+    border-top: 1px solid #ccc;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: #fff;
+}
+
+th a:link, th a:visited {
+    margin: 0 10px;
+    color: #333;
+}
+
+th img {
+    position: absolute;
+    margin-left: -6px;
+}
+
+tbody {
+    border: solid #ccc;
+    border-width: 1px 0;
+}
+
+hr {
+    margin: 0;
+    border: none;
+}
+
+td {
+    padding: 5px;
+    font-size: 11px;
+}
+
+td a {
+    margin-right: 40px;
+    font-size: 14px;
+}
+
+td.modified {
+    text-align: center;
+}
+
+td.size {
+    text-align: right;
+}
+
+.icon, .name {
+    border: none;
+}
+
+.icon {
+    width: 16px;
+    padding-right: 0;
+}
+
+.modified {
+    width: 130px;
+}
+
+.size {
+    width: 60px;
+}
+
+

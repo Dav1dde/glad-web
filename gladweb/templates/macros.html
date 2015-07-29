@@ -1,0 +1,70 @@
+{% macro entry(ent) %}
+  <tr>
+    {% set icon = ent.guess_icon() %}
+    <td class="icon">
+      {% if icon %}
+        <img src="{{ icon }}" />
+      {% endif %}
+    </td>
+    <td class="name">
+      <a href="{{ url_for(endpoint, root=root, path=ent.path) }}">
+      {%- if ent.name == ".." -%}
+        Parent folder
+      {%- else -%}
+        {{ ent.name }}
+      {%- endif -%}
+    </a></td>
+    <td class="modified">
+      <time datetime="{{ ent.modified }}">{{ ent.modified }}</time>
+    </td>
+    <td class="size">
+      {% if ent.size %}
+        {{ ent.size|filesizeformat }}
+      {% else %}
+        -
+      {% endif %}
+    </td>
+  </tr>
+{% endmacro %}
+
+{% macro th(key, label, colspan=1) %}
+  <th class="{{ key }}" colspan="{{ colspan }}">
+    {%- if sort_by == key and order > 0 -%}
+      <a href="?sort_by={{ key }}&amp;order=desc">{{ label }}</a>
+    {%- else -%}
+      <a href="?sort_by={{ key }}">{{ label }}</a>
+    {%- endif -%}
+    {%- if sort_by == key -%}
+      {%- if order > 0 -%}
+        <img src="{{ url_for('__autoindex__.static', filename='asc.gif') }}" alt="ASC" />
+      {%- elif order < 0 -%}
+        <img src="{{ url_for('__autoindex__.static', filename='desc.gif') }}" alt="DESC" />
+      {%- endif -%}
+    {%- endif -%}
+  </th>
+{% endmacro %}
+
+{% macro thead() %}
+  <tr>
+    {{ th("name", "Name", 2) }}
+    {{ th("modified", "Last modified") }}
+    {{ th("size", "Size") }}
+  </tr>
+{% endmacro %}
+
+{% macro breadcrumb(ent) %}
+  {% set parent = ent.parent %}
+  {% if parent %}
+    {{ breadcrumb(parent) }}
+    <span class="sep">&raquo;</span>
+  {% endif %}
+  <a href="{{ url_for(endpoint, root=root, path=ent.path) }}">
+    {% set icon = ent.guess_icon() %}
+    {% if icon %}
+      <img src="{{ icon }}" />
+    {% endif %}
+    {% if not ent.is_root() %}
+      {{ ent.name }}
+    {% endif %}
+  </a>
+{% endmacro %}

@@ -1,0 +1,47 @@
+{% extends '__autoindex__/autoindex.html' %}
+{% import 'macros.html' as macros with context %}
+
+
+{% block meta %}
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='multi-select.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
+{% endblock %}
+
+
+{% block header %}
+    <div class="container">
+    <header class="header">
+        <h3>Glad</h3><h5>Generated files. <small>These files are not permanent!</small></h5>
+    </header>
+{% endblock %}
+
+
+{% block table %}
+    <div class="aidx">
+        <table>
+            <thead>
+            {{ macros.thead() }}
+            {% if not curdir.is_root() %}
+                <tr>
+                    <td class="breadcrumb" colspan="4">
+                        <h1>{{ macros.breadcrumb(curdir) }}</h1>
+                    </td>
+                </tr>
+            {% endif %}
+            </thead>
+            <tbody>
+            {% for ent in entries %}
+                {{ macros.entry(ent) }}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+
+{% block footer %}
+    </div>
+{% endblock %}

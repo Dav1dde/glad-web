@@ -1,8 +1,11 @@
 from flask import Flask, g
+from flask.ext.autoindex import AutoIndexBlueprint
+import werkzeug
 from gladweb.metadata import Metadata
 import gladweb.util
 import logging
 import sys
+import os
 
 
 class LevelFilter(logging.Filter):
@@ -63,6 +66,9 @@ def create_application(debug=False, verbose=False):
     app.config.from_object('gladweb.config')
     app.debug = debug
 
+    if not os.path.exists(app.config['TEMP']):
+        os.makedirs(app.config['TEMP'])
+
     if verbose or (not app.debug and verbose is None):
         setup_logging()
 
@@ -73,6 +79,22 @@ def create_application(debug=False, verbose=False):
 
     from gladweb.views.index import index
     app.register_blueprint(index)
+
+    from gladweb.views.generated import generated
+    idx = AutoIndexBlueprint(generated, browse_root=app.config['TEMP'], add_url_rules=False)
+
+    @generated.route('/<root>/')
+    @generated.route('/<root>/<path:path>')
+    def autoindex(root, path='.'):
+        root = werkzeug.utils.secure_filename(root)
+        return idx.render_autoindex(
+            path,
+            browse_root=os.path.join(app.config['TEMP'], root),
+            template='autoindex.html',
+            template_context={'root': root}
+        )
+
+    app.register_blueprint(generated, url_prefix='/generated')
 
     app.jinja_env.filters['pretty_date'] = gladweb.util.pretty_date
     app.jinja_env.globals.update(glad_version=get_glad_version())

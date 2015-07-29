@@ -55,9 +55,15 @@ def validate_form():
     return language, specification, profile, apis_parsed, extensions, loader
 
 
-def write_dir_to_zipfile(path, zipf):
+def write_dir_to_zipfile(path, zipf, exclude=None):
+    if exclude is None:
+        exclude = []
+
     for root, dirs, files in os.walk(path):
         for file_ in files:
+            if file_ in exclude:
+                continue
+
             zipf.write(
                 os.path.join(root, file_),
                 os.path.relpath(os.path.join(root, file_), path)
@@ -84,32 +90,27 @@ def glad_generate():
 
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
-    directory = tempfile.mkdtemp()
+    directory = tempfile.mkdtemp(dir=current_app.config['TEMP'])
     with generator_cls(directory, spec, apis, loader) as generator:
         generator.generate(extensions)
 
-    try:
-        fobj = io.BytesIO()
+    zip_path = os.path.join(directory, 'glad.zip')
+    with open(zip_path, 'w') as fobj:
         zipf = zipfile.ZipFile(fobj, mode='w')
-        write_dir_to_zipfile(directory, zipf)
+        write_dir_to_zipfile(directory, zipf, exclude=['glad.zip'])
         zipf.close()
-    finally:
-        shutil.rmtree(directory)
 
-    fobj.seek(0, io.SEEK_SET)
-    return fobj
+    return url_for('generated.autoindex', root=os.path.split(directory)[1])
+
 
 @index.route('/generate', methods=['POST'])
 def generate():
     try:
-        fobj = glad_generate()
+        url = glad_generate()
     except Exception, e:
         current_app.logger.exception(e)
         current_app.logger.error(request.form)
         flash(e.message, category='error')
         return redirect(url_for('index.landing'))
 
-    return send_file(
-        fobj, mimetype='application/octet-stream',
-        as_attachment=True, attachment_filename='glad-generated.zip'
-    )
+    return redirect(url)
