@@ -14,7 +14,7 @@
 {% block header %}
     <div class="container">
     <header class="header">
-        <h3>Glad</h3><h5>Generated files. {{ "<small>These files are not permanent!</small>"|safe if root.startswith('tmp') }}</h5>
+        <h3><a href="{{ url_for('index.landing') }}">Glad</a></h3><h5>Generated files. {{ "<small>These files are not permanent!</small>"|safe if root.startswith('tmp') }}</h5>
     </header>
 {% endblock %}
 
