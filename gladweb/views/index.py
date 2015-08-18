@@ -85,7 +85,7 @@ def glad_generate():
     if loader_cls is None:
         raise ValueError('API/Spec not yet supported')
 
-    loader = loader_cls()
+    loader = loader_cls(apis)
     loader.disabled = not loader_enabled
 
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
