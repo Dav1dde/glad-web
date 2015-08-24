@@ -98,6 +98,7 @@ class Metadata(object):
 
         self.created = time.time()
 
+        self.cache.remove('metadata.json')
         with self.cache.open('metadata.json', 'w') as f:
             json.dump(self.as_dict(), f)
 

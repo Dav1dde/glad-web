@@ -4,12 +4,15 @@ import shutil
 import string
 import sys
 import werkzeug
+from contextlib import closing
 from glad.parse import Spec
 
 if sys.version_info >= (3, 0):
     from urllib.request import urlretrieve
+    from urllib.request import urlopen
 else:
     from urllib import urlretrieve
+    from urllib2 import urlopen
 
 
 KHRPLATFORM_URL = 'https://www.khronos.org/registry/egl/api/KHR/khrplatform.h'
@@ -23,6 +26,8 @@ def generate_filename(allowed_chars, extension=''):
 
 
 class FileCache(object):
+    SPECIFICATIONS = ('egl', 'gl', 'glx', 'wgl')
+
     def __init__(self, path):
         self.path = os.path.abspath(path)
 
@@ -30,11 +35,27 @@ class FileCache(object):
 
     def clear(self):
         for name in os.listdir(self.path):
-            path = os.path.join(self.path, name)
-            if os.path.isfile(path) or os.path.islink(path):
-                os.remove(path)
-            else:
-                shutil.rmtree(path)
+            self.remove(name)
+
+    def remove(self, filename):
+        path = self.get_path(filename)
+        if os.path.isfile(path) or os.path.islink(path):
+            os.remove(path)
+        else:
+            shutil.rmtree(path)
+
+    def refresh(self):
+        for name in self.SPECIFICATIONS:
+            filename = '{0}.xml'.format(name.lower())
+            # we download, if this fails it is fine, if it success we overwrite
+            print Spec.API + filename
+            with closing(urlopen(Spec.API + filename)) as src:
+                with self.open(filename, 'w') as dst:
+                    dst.write(src.read())
+
+        with closing(urlopen(KHRPLATFORM_URL)) as src:
+            with self.open('khrplatform.h') as dst:
+                dst.write(src.read())
 
     def get_path(self, filename):
         filename = werkzeug.utils.secure_filename(filename)
@@ -52,6 +73,9 @@ class FileCache(object):
         return open(self.get_path(filename), mode=mode)
 
     def open_specification(self, name, mode='rb'):
+        name = name.lower()
+        if name not in self.SPECIFICATIONS:
+            raise ValueError('Invalid specification name "{0}".'.format(name))
         filename = '{0}.xml'.format(name.lower())
         if not self.exists(filename):
             urlretrieve(Spec.API + filename, self.get_path(filename))

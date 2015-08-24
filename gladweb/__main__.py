@@ -17,7 +17,7 @@ def _refresh_metadata(cache, diff=60):
 
     m = Metadata(cache)
     if time.time() - m.created > diff:
-        cache.clear()
+        cache.refresh()
         m.refresh_metadata()
 
 
