@@ -48,7 +48,6 @@ class FileCache(object):
         for name in self.SPECIFICATIONS:
             filename = '{0}.xml'.format(name.lower())
             # we download, if this fails it is fine, if it success we overwrite
-            print Spec.API + filename
             with closing(urlopen(Spec.API + filename)) as src:
                 with self.open(filename, 'w') as dst:
                     dst.write(src.read())
