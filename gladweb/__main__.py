@@ -2,6 +2,7 @@ import argparse
 import shutil
 import sys
 import time
+import logging
 from gladweb import create_application
 import os
 
@@ -28,6 +29,12 @@ def www(ns):
 
 def cron(ns):
     import gladweb.config
+
+    if not ns.quiet:
+        logging.basicConfig(
+            format='[%(asctime)s][%(levelname)s\t][%(name)-7s\t]: %(message)s',
+            datefmt='%m/%d/%Y %H:%M:%S', level=logging.DEBUG
+        )
 
     diff = ns.age * 60 * 60 if ns.age >= 0 else 0
     _refresh_metadata(gladweb.config.CACHE, diff)
@@ -63,6 +70,7 @@ def main():
     cron_parser = subparsers.add_parser('cron')
     cron_parser.add_argument('--age', type=int, default=24,
                              help='Temporary files will be deleted after X hours')
+    cron_parser.add_argument('--quiet', action='store_true', help='Show no logging output')
 
     ns = parser.parse_args()
 
