@@ -2,17 +2,10 @@ import os
 import random
 import shutil
 import string
-import sys
 import werkzeug
 from contextlib import closing
 from glad.parse import Spec
-
-if sys.version_info >= (3, 0):
-    from urllib.request import urlretrieve
-    from urllib.request import urlopen
-else:
-    from urllib import urlretrieve
-    from urllib2 import urlopen
+from glad.opener import URLOpener
 
 
 KHRPLATFORM_URL = 'https://www.khronos.org/registry/egl/api/KHR/khrplatform.h'
@@ -28,8 +21,11 @@ def generate_filename(allowed_chars, extension=''):
 class FileCache(object):
     SPECIFICATIONS = ('egl', 'gl', 'glx', 'wgl')
 
-    def __init__(self, path):
+    def __init__(self, path, opener=None):
         self.path = os.path.abspath(path)
+        self.opener = opener
+        if self.opener is None:
+            self.opener = URLOpener.default()
 
         self._allowed_chars = string.ascii_letters + string.digits
 
@@ -48,12 +44,12 @@ class FileCache(object):
         for name in self.SPECIFICATIONS:
             filename = '{0}.xml'.format(name.lower())
             # we download, if this fails it is fine, if it success we overwrite
-            with closing(urlopen(Spec.API + filename)) as src:
+            with closing(self.opener.urlopen(Spec.API + filename)) as src:
                 with self.open(filename, 'w') as dst:
                     dst.write(src.read())
 
-        with closing(urlopen(KHRPLATFORM_URL)) as src:
-            with self.open('khrplatform.h') as dst:
+        with closing(self.opener.urlopen(KHRPLATFORM_URL)) as src:
+            with self.open('khrplatform.h', 'w') as dst:
                 dst.write(src.read())
 
     def get_path(self, filename):
@@ -77,14 +73,14 @@ class FileCache(object):
             raise ValueError('Invalid specification name "{0}".'.format(name))
         filename = '{0}.xml'.format(name.lower())
         if not self.exists(filename):
-            urlretrieve(Spec.API + filename, self.get_path(filename))
+            self.opener.urlretrieve(Spec.API + filename, self.get_path(filename))
 
         return self.open(filename, mode=mode)
 
     def get_khrplatform(self):
         path = self.get_path('khrplatform.h')
         if not self.exists('khrplatform.h'):
-            urlretrieve(KHRPLATFORM_URL, path)
+            self.opener.urlretrieve(KHRPLATFORM_URL, path)
 
         return path
 
