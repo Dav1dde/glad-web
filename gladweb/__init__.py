@@ -87,9 +87,14 @@ def create_application(debug=False, verbose=False):
     @generated.route('/<root>/<path:path>')
     def autoindex(root, path='.'):
         root = werkzeug.utils.secure_filename(root)
+        browse_root = os.path.join(app.config['TEMP'], root)
+        serialized_path = os.path.join(browse_root, '.serialized')
+        if os.path.exists(serialized_path):
+            with open(serialized_path) as fobj:
+                g.serialized = fobj.read().strip()
         return idx.render_autoindex(
             path,
-            browse_root=os.path.join(app.config['TEMP'], root),
+            browse_root=browse_root,
             template='autoindex.html',
             template_context={'root': root}
         )

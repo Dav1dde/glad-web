@@ -1,10 +1,9 @@
 from collections import namedtuple
-import importlib
 import os
-import io
-import shutil
 import tempfile
 import zipfile
+from itertools import izip_longest, chain
+from urllib import urlencode
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, send_file, current_app
 import glad.lang.c.generator
 from glad.spec import SPECS
@@ -99,6 +98,13 @@ def glad_generate():
         zipf = zipfile.ZipFile(fobj, mode='w')
         write_dir_to_zipfile(directory, zipf, exclude=['glad.zip'])
         zipf.close()
+
+    serialized = urlencode(list(chain.from_iterable(
+        izip_longest('', x[1], fillvalue=x[0]) for x in request.form.lists())
+    ))
+    serialized_path = os.path.join(directory, '.serialized')
+    with open(serialized_path, 'w') as fobj:
+        fobj.write(serialized)
 
     return url_for('generated.autoindex', root=os.path.split(directory)[1])
 
