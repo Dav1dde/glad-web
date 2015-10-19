@@ -1,6 +1,7 @@
 from flask import Flask, g
 from flask.ext.autoindex import AutoIndexBlueprint
 import werkzeug
+from glad.util import get_glad_version
 from gladweb.metadata import Metadata
 import gladweb.util
 import logging
@@ -39,15 +40,6 @@ def setup_logging():
     root_logger.addHandler(stderr)
 
     root_logger.setLevel(logging.DEBUG)
-
-
-def get_glad_version():
-    try:
-        import pkg_resources
-    except ImportError:
-        return 'Unknown'
-
-    return pkg_resources.get_distribution('glad').version
 
 
 def create_application(debug=False, verbose=False):

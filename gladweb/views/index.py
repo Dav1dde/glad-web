@@ -90,8 +90,8 @@ def glad_generate():
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
     directory = tempfile.mkdtemp(dir=current_app.config['TEMP'])
-    with generator_cls(directory, spec, apis, loader) as generator:
-        generator.generate(extensions)
+    with generator_cls(directory, spec, apis, extensions, loader) as generator:
+        generator.generate()
 
     zip_path = os.path.join(directory, 'glad.zip')
     with open(zip_path, 'w') as fobj:
