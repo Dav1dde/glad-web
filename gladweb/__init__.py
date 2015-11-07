@@ -1,7 +1,7 @@
 from flask import Flask, g
 from flask.ext.autoindex import AutoIndexBlueprint
 import werkzeug
-from glad.util import get_glad_version
+import glad
 from gladweb.metadata import Metadata
 import gladweb.util
 import logging
@@ -94,6 +94,6 @@ def create_application(debug=False, verbose=False):
     app.register_blueprint(generated, url_prefix='/generated')
 
     app.jinja_env.filters['pretty_date'] = gladweb.util.pretty_date
-    app.jinja_env.globals.update(glad_version=get_glad_version())
+    app.jinja_env.globals.update(glad_version=glad.__version__)
 
     return app
