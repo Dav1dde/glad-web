@@ -52,6 +52,9 @@ $.fn.deserialize = function (serializedString)
     selection_update();
 
     /* set api */
+    if (!$.isArray(data['api'])) {
+        data['api'] = [data['api']];
+    }
     $.each(data['api'], function(i, apistr) {
         var tmp = apistr.split('=', 2);
         var api = tmp[0];
