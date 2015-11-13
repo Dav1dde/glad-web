@@ -144,8 +144,13 @@ function selection_update(event) {
 $(function () {
     $('#specification-input').change(selection_update);
     $('#api').find('select').change(selection_update);
-    $('.extensions-add-all').click(function() { $('#extensions').find('select').multiSelect('select_all'); });
-    $('.extensions-remove-all').click(function() { $('#extensions').find('select').multiSelect('deselect_all'); });
+    $('.extensions-add-all').click(function() { $('#extensions').find('select').multiSelect('select', $('#extensions .ms-selectable li:visible').toArray().map($.text)); });
+    $('.extensions-remove-all').click(function() { $('#extensions').find('select').multiSelect('deselect', $('#extensions .ms-selection li:visible').toArray().map($.text)); });
+
+    var qs_options = {
+        'prepareQuery': function (val) { return new RegExp(val, "i"); },
+        'testQuery': function (query, txt, _row) { return query.test(txt); }
+    };
 
     $('#extensions').find('select').multiSelect({
         selectableHeader: "<input type='text' class='search-input u-full-width' autocomplete='off' placeholder='Search'>",
@@ -157,7 +162,8 @@ $(function () {
                 selectableSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selectable:not(.ms-selected)',
                 selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
 
-            that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+            that.qs1 = $selectableSearch
+                .quicksearch(selectableSearchString,  qs_options)
                 .on('keydown', function (e) {
                     if (e.which === 40) {
                         that.$selectableUl.focus();
@@ -165,7 +171,8 @@ $(function () {
                     }
                 });
 
-            that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+            that.qs2 = $selectionSearch
+                .quicksearch(selectionSearchString, qs_options)
                 .on('keydown', function (e) {
                     if (e.which == 40) {
                         that.$selectionUl.focus();
