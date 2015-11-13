@@ -71,7 +71,7 @@ $.fn.deserialize = function (serializedString)
     $form.find('select[name=profile]').val(data['profile']);
 
     /* set extensions */
-    $.each([].concat(data['extensions']), function(i, ext) {
+    $.each([].concat((data['extensions'] || [])), function(i, ext) {
         $form.find('select[name=extensions]').multiSelect('select', ext);
     });
 
