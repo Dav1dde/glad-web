@@ -140,10 +140,27 @@ function selection_update(event) {
     }
 }
 
+function add_extensions(extensions) {
+    if (!$.isArray(extensions)) {
+        extensions = extensions.replace(/,/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
+    }
+
+    console.log(extensions);
+
+    $('#main-form').find('select[name=extensions]').multiSelect('select', extensions);
+}
+
 
 $(function () {
     $('#specification-input').change(selection_update);
     $('#api').find('select').change(selection_update);
+    $('.extension-add-list').click(function() { $('#addListModal').css('visibility', 'visible'); });
+    $('.extension-addlist-add').click(function() {
+        add_extensions($('#addListModal textarea').val());
+        $('#addListModal textarea').val('');
+        $('#addListModal').css('visibility', 'hidden');
+    });
+    $('.extension-addlist-close').click(function() { $('#addListModal').css('visibility', 'hidden'); });
     $('.extensions-add-all').click(function() { $('#extensions').find('select').multiSelect('select', $('#extensions .ms-selectable li:visible').toArray().map($.text)); });
     $('.extensions-remove-all').click(function() { $('#extensions').find('select').multiSelect('deselect', $('#extensions .ms-selection li:visible').toArray().map($.text)); });
 

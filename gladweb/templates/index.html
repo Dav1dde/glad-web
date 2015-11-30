@@ -112,6 +112,7 @@
 
                         <div class="row extension-buttons">
                             <div class="offset-by-six six columns">
+                                <a class="button extension-add-list" href="javascript:void(0)">Add list</a>
                                 <a class="button extensions-add-all" href="javascript:void(0)">Add all</a>
                                 <a class="button extensions-remove-all" href="javascript:void(0)">Remove all</a>
                             </div>
@@ -132,6 +133,24 @@
                         <input class="button" type="submit" value="Generate">
                     </section>
                 </form>
+
+                <div id="addListModal" class="modal-dialog">
+                    <div class="container">
+                        <label for="modal-extensions-input">Extensions:</label>
+                        <div class="row">
+                            <div class="twelve columns">
+                                <textarea id="modal-extensions-input"></textarea>
+                            </div>
+                        </div>
+                        <div class="row extension-buttons">
+                            <div class="offset-by-six six columns">
+                                <a class="button extension-addlist-add" href="javascript:void(0)">Add</a>
+                                <a class="button extension-addlist-close" href="javascript:void(0)">Close</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </main>
 
             <footer>
