@@ -90,6 +90,7 @@ def glad_generate():
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
     directory = tempfile.mkdtemp(dir=current_app.config['TEMP'])
+    os.chmod(directory, 0o750)
     with generator_cls(directory, spec, apis, extensions, loader) as generator:
         generator.generate()
 
