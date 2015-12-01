@@ -34,7 +34,9 @@
             </thead>
             <tbody>
             {% for ent in entries %}
-                {{ macros.entry(ent) }}
+                {% if not ent.name == 'index.html' %}
+                    {{ macros.entry(ent) }}
+                {% endif %}
             {% endfor %}
             </tbody>
         </table>

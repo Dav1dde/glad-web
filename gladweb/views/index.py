@@ -106,7 +106,10 @@ def glad_generate():
     with open(serialized_path, 'w') as fobj:
         fobj.write(serialized)
 
-    return url_for('generated.autoindex', root=os.path.split(directory)[1])
+    name = os.path.split(directory)[1]
+    if current_app.config['FREEZE']:
+        current_app.freezer.freeze(name)
+    return url_for('generated.autoindex', root=name)
 
 
 @index.route('/generate', methods=['POST'])

@@ -26,6 +26,12 @@ CACHE = gladweb.cache.FileCache(os.path.join(base_path, 'cache'))
 # Path to a folder which will be used to store generation results
 TEMP = os.path.join(base_path, 'temp')
 
+# Generate static html files for /generated
+# the webserver needs to be configured to serve /generated instead of passing
+# requests through to glad-web.
+# Note: /generated/icons still needs to be served by glad-web
+FREEZE = True
+
 try:
     from local_config import *
 except ImportError:

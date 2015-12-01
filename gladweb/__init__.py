@@ -2,6 +2,7 @@ from flask import Flask, g
 from flask.ext.autoindex import AutoIndexBlueprint
 import werkzeug
 import glad
+from gladweb.freezer import Freezer
 from gladweb.metadata import Metadata
 import gladweb.util
 import logging
@@ -57,6 +58,7 @@ def create_application(debug=False, verbose=False):
     app = Flask(__name__)
     app.config.from_object('gladweb.config')
     app.debug = debug
+    app.freezer = Freezer(app)
 
     if not os.path.exists(app.config['TEMP']):
         os.makedirs(app.config['TEMP'])
@@ -73,7 +75,7 @@ def create_application(debug=False, verbose=False):
     app.register_blueprint(index)
 
     from gladweb.views.generated import generated
-    idx = AutoIndexBlueprint(generated, browse_root=app.config['TEMP'], add_url_rules=False)
+    idx = AutoIndexBlueprint(generated, browse_root=app.config['TEMP'], add_url_rules=False, silk_options={'silk_path': '/icons'})
 
     @generated.route('/<root>/')
     @generated.route('/<root>/<path:path>')
@@ -90,6 +92,11 @@ def create_application(debug=False, verbose=False):
             template='autoindex.html',
             template_context={'root': root}
         )
+
+    @app.route('/asd/<path:path>')
+    def send_generated(path):
+        from flask import send_from_directory
+        return send_from_directory(app.config['TEMP'], path + '/index.html')
 
     app.register_blueprint(generated, url_prefix='/generated')
 
