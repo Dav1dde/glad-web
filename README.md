@@ -7,6 +7,69 @@ GL/GLES/EGL/GLX/WGL loader-generator based on the official specifications.
 Check out the demo at: http://glad.dav1d.de/
 
 
+## Requirements ##
+
+    Flask==0.10.1
+    Flask-Silk==0.2
+    Jinja2==2.7.3
+    MarkupSafe==0.23
+    Werkzeug==0.10.4
+    argparse==1.2.1
+    eventlet==0.17.4
+    future==0.15.0
+    gevent==1.0.2
+    greenlet==0.4.7
+    gunicorn==19.3.0
+    itsdangerous==0.24
+    lxml==3.4.4
+    wsgiref==0.1.2
+
+Furthermore [Flask-Autoindex](https://github.com/sublee/flask-autoindex) is also required.
+I am using the git version at commit: `bd5daee43353e77cb89d967bffa1a3786e5182ad`. The PyPi version does *not* work. 
+
+And obviously [glad](https://github.com/Dav1dde/glad) needs to be installed, your choice which version you want to use!
+
+## Gunicorn ##
+
+Start script:
+
+    #!/bin/sh
+    
+    cd /path/to/gladweb/glad-web/
+    # assume virtualenv location, might need to be changed
+    source ../bin/activate
+    
+    exec gunicorn -c gunicorn.config.py 'gladweb:create_application(debug=False, verbose=None)' "$@"
+    
+    
+Config:
+
+    import os.path
+    
+    base_path = os.path.split(os.path.abspath(__file__))[0]
+    
+    bind = '127.0.0.1:5000'
+    workers = 5
+    worker_class = 'eventlet'
+    keepalive = 5
+    user = 'pyweb'
+    errorlog = os.path.join(base_path, 'error.log')
+    loglevel = 'warning'
+    proc_name = 'glad gunicorn'
+
+
+## Supervisor ##
+
+    [program:glad]
+    command = /path/to/gladweb/glad-web/start_gladweb.sh
+    directory = /path/to/gladweb/glad-web
+    user = glad
+    autostart = True
+    autorestart = True
+    stdout_logfile = /var/log/supervisor/glad.log
+    stderr_logfile = /var/log/supervisor/glad_err.log
+
+
 ## Nginx ##
 
     server {
