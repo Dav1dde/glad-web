@@ -93,11 +93,6 @@ def create_application(debug=False, verbose=False):
             template_context={'root': root}
         )
 
-    @app.route('/asd/<path:path>')
-    def send_generated(path):
-        from flask import send_from_directory
-        return send_from_directory(app.config['TEMP'], path + '/index.html')
-
     app.register_blueprint(generated, url_prefix='/generated')
 
     app.jinja_env.filters['pretty_date'] = gladweb.util.pretty_date
