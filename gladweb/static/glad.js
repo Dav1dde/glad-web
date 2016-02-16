@@ -145,8 +145,6 @@ function add_extensions(extensions) {
         extensions = extensions.replace(/,/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
     }
 
-    console.log(extensions);
-
     $('#main-form').find('select[name=extensions]').multiSelect('select', extensions);
 }
 
