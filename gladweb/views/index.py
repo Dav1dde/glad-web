@@ -89,7 +89,10 @@ def glad_generate():
 
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
-    directory = tempfile.mkdtemp(dir=current_app.config['TEMP'])
+    # the suffix is required because mkdtemp sometimes creates directories with an
+    # underscore at the end, we later use werkzeug.utils.secure_filename on that directory,
+    # this function happens to strip underscores...
+    directory = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
     os.chmod(directory, 0o750)
     with generator_cls(directory, spec, apis, extensions, loader) as generator:
         generator.generate()
