@@ -1,163 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        {% block head %}
-            <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    {% block head %}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-            <meta name="description" content="Web generator for the Glad tool">
+        <meta name="description" content="Web generator for the Glad tool">
 
-            <title>{% block title %}{{ config.title }}{% endblock %}</title>
-            <script src="{{ url_for('static', filename='jquery-1.11.2.min.js') }}"></script>
-            <script src="{{ url_for('static', filename='jquery.quicksearch.js') }}"></script>
-            <script src="{{ url_for('static', filename='jquery.multi-select.js') }}"></script>
-            <script src="{{ url_for('static', filename='glad.js') }}"></script>
+        <title>{% block title %}{{ config.title }}{% endblock %}</title>
+        <script src="{{ url_for('static', filename='jquery-1.11.2.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='jquery.quicksearch.js') }}"></script>
+        <script src="{{ url_for('static', filename='jquery.multi-select.js') }}"></script>
+        <script src="{{ url_for('static', filename='glad.js') }}"></script>
 
-            <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
-            <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='multi-select.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
-        {% endblock %}
-    </head>
+        <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='multi-select.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
+    {% endblock %}
+</head>
 
-    <body>
-        <a href="https://github.com/dav1dde/glad-web"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<body>
+<a href="https://github.com/dav1dde/glad-web"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
 
-        <div class="container">
-            <header class="header">
-                <h3>Glad</h3><h5>Multi-Language GL/GLES/EGL/GLX/WGL Loader-Generator based on the official specs.</h5>
-            </header>
+<div class="container">
+    <header class="header">
+        <h3>Glad</h3><h5>Multi-Language GL/GLES/EGL/GLX/WGL Loader-Generator based on the official specs.</h5>
+    </header>
 
-            <main>
-                {% set messages = get_flashed_messages(category_filter=['error']) %}
-                {% if messages %}
-                <section id="error">
-                    <div class="row">
-                        <h6>Error:</h6>
-                        {% for message in messages %}
+    <main>
+        {% set messages = get_flashed_messages(category_filter=['error']) %}
+        {% if messages %}
+            <section id="error">
+                <div class="row">
+                    <h6>Error:</h6>
+                    {% for message in messages %}
                         <div class="twelve columns">
                             {{  message }}
                         </div>
-                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <form action="generate" method="POST" id="main-form">
+            <section id="language">
+                <div class="row">
+                    <div class="six columns" id="language">
+                        <label for="lang-input">Language</label>
+                        <select class="u-full-width" name="language" id="lang-input">
+                            {% for language in languages -%}
+                                <option value="{{ language.id }}"> {{ language.name }}</option>
+                            {%-  endfor %}
+                        </select>
                     </div>
-                </section>
-                {% endif %}
+                </div>
+            </section>
 
-                <form action="generate" method="POST" id="main-form">
-                    <section id="language-specification">
-                        <div class="row">
-                            <div class="six columns" id="language">
-                                <label for="lang-input">Language</label>
-                                <select class="u-full-width" name="language" id="lang-input">
-                                    {% for language in languages -%}
-                                        <option value="{{ language.id }}"> {{ language.name }}</option>
-                                    {%-  endfor %}
-                                </select>
-                            </div>
+            <section id="specification-api">
+                <div class="row">
+                    <div class="six columns" id="specification">
+                        <label for="specification-input">Specification</label>
+                        <select class="u-full-width" name="specification" id="specification-input">
+                            {%  for specification in specifications -%}
+                                <option value="{{ specification.id }}" data->{{ specification.name }}</option>
+                            {%-  endfor %}
+                        </select>
+                    </div>
 
-                            <div class="six columns" id="specification">
-                                <label for="specification-input">Specification</label>
-                                <select class="u-full-width" name="specification" id="specification-input">
-                                    {%  for specification in specifications -%}
-                                        <option value="{{ specification.id }}" data->{{ specification.name }}</option>
-                                    {%-  endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="api-profile">
-                        <div class="row">
-                            <div class="six columns" id="api">
-                                <label for="api-input">API</label>
-                                {%  for api in apis|sort(attribute='name') -%}
-                                <div class="row" data-specification="{{ api.specification }}">
-                                    <div class="one column"></div>
-                                    <div class="two columns"><label for="api-input-{{ api.id }}">{{ api.name }}</label></div>
-                                    <div class="nine columns">
-                                        <select class="u-full-width" data-specification="{{ api.specification }}" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
-                                            {% for version in api.versions -%}
-                                                <option value="{{ api.id }}={{ version.id }}" {{ 'selected' if api.default == version.id }}>{{ version.name }}</option>
-                                            {%- endfor %}
-                                        </select>
-                                    </div>
+                    <div class="six columns" id="api">
+                        <label for="api-input">API</label>
+                        {%  for api in apis|sort(attribute='name') -%}
+                            <div class="row" data-specification="{{ api.specification }}">
+                                <div class="one column"></div>
+                                <div class="two columns"><label for="api-input-{{ api.id }}">{{ api.name }}</label></div>
+                                <div class="nine columns">
+                                    <select class="u-full-width" data-specification="{{ api.specification }}" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
+                                        {% for version in api.versions -%}
+                                            <option value="{{ api.id }}={{ version.id }}" {{ 'selected' if api.default == version.id }}>{{ version.name }}</option>
+                                        {%- endfor %}
+                                    </select>
                                 </div>
-                                {%- endfor %}
                             </div>
+                        {%- endfor %}
+                    </div>
+                </div>
+            </section>
 
-                            <div class="six columns" id="profile">
-                                <label for="profile-input">Profile</label>
-                                <select class="u-full-width" name="profile" id="profile-input">
-                                    {%  for profile in profiles -%}
-                                        <option value="{{ profile.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
-                                    {%-  endfor %}
-                                    <option class="empty-option" disabled hidden value=""></option>
-                                </select>
-                            </div>
-                        </div>
-                    </section>
+            <section id="profile">
+                <div class="six columns" id="profile">
+                    <label for="profile-input">Profile</label>
+                    <select class="u-full-width" name="profile" id="profile-input">
+                        {%  for profile in profiles -%}
+                            <option value="{{ profile.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
+                        {%-  endfor %}
+                        <option class="empty-option" disabled hidden value=""></option>
+                    </select>
+                </div>
+            </section>
 
-                    <section id="extensions">
-                        <div class="row">
-                            <div class="twelve columns">
-                                <label for="api-input">Extensions</label>
-                                <select class="u-full-width" name="extensions" id="extension-input" multiple>
-                                    {%  for group in extensions|sort(attribute='name')|groupby('id') -%}
-                                        {%-  set extension = group.list|first -%}
-                                        <option value="{{ extension.id }}" data-specification="{{ extension.specification }}" data-api="{{ group.list|join(' ', attribute='api') }}">{{ extension.name }}</option>
-                                    {%-  endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row extension-buttons">
-                            <div class="offset-by-six six columns">
-                                <a class="button extension-add-list" href="javascript:void(0)">Add list</a>
-                                <a class="button extensions-add-all" href="javascript:void(0)">Add all</a>
-                                <a class="button extensions-remove-all" href="javascript:void(0)">Remove all</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="options">
-                        <div class="row">
-                            <label for="profile-input">Options</label>
-                            <div class="six columns">
-                                <input type="checkbox" name="loader" id="loader-input" checked>
-                                <span class="&nbsp;label-body">Generate a loader</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="submit">
-                        <input class="button" type="submit" value="Generate">
-                    </section>
-                </form>
-
-                <div id="addListModal" class="modal-dialog">
-                    <div class="container">
-                        <label for="modal-extensions-input">Extensions:</label>
-                        <div class="row">
-                            <div class="twelve columns">
-                                <textarea id="modal-extensions-input"></textarea>
-                            </div>
-                        </div>
-                        <div class="row extension-buttons">
-                            <div class="offset-by-six six columns">
-                                <a class="button extension-addlist-add" href="javascript:void(0)">Add</a>
-                                <a class="button extension-addlist-close" href="javascript:void(0)">Close</a>
-                            </div>
-                        </div>
+            <section id="extensions">
+                <div class="row">
+                    <div class="twelve columns">
+                        <label for="extension-input">Extensions</label>
+                        <select class="u-full-width" name="extensions" id="extension-input" multiple>
+                            {%  for group in extensions|sort(attribute='name')|groupby('id') -%}
+                                {%-  set extension = group.list|first -%}
+                                <option value="{{ extension.id }}" data-specification="{{ extension.specification }}" data-api="{{ group.list|join(' ', attribute='api') }}">{{ extension.name }}</option>
+                            {%-  endfor %}
+                        </select>
                     </div>
                 </div>
 
-            </main>
+                <div class="row extension-buttons">
+                    <div class="offset-by-six six columns">
+                        <a class="button extension-add-list" href="javascript:void(0)">Add list</a>
+                        <a class="button extensions-add-all" href="javascript:void(0)">Add all</a>
+                        <a class="button extensions-remove-all" href="javascript:void(0)">Remove all</a>
+                    </div>
+                </div>
+            </section>
 
-            <footer>
-                <span class="u-pull-right">Specifications last updated: {{ created|pretty_date }}</span>Glad-Version: {{ glad_version }}
-            </footer>
+            <section id="options">
+                <div class="row">
+                    <label for="profile-input">Options</label>
+                    {% for option in options|sort(attribute='name') %}
+                        <div class="row" data-language="{{ option.language }}">
+                            <div class="one column">
+                                <input type="checkbox" name="{{ option.id }}" id="option-{{ option.language }}-{{ option.id }}">
+                            </div>
+                            <div class="two columns">
+                                <span class="label-body">{{ option.name }}</span>
+                            </div>
+                            <div class="nine columns">
+                                {{ option.description }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section id="submit">
+                <input class="button" type="submit" value="Generate">
+            </section>
+        </form>
+
+        <div id="addListModal" class="modal-dialog">
+            <div class="container">
+                <label for="modal-extensions-input">Extensions:</label>
+                <div class="row">
+                    <div class="twelve columns">
+                        <textarea id="modal-extensions-input"></textarea>
+                    </div>
+                </div>
+                <div class="row extension-buttons">
+                    <div class="offset-by-six six columns">
+                        <a class="button extension-addlist-add" href="javascript:void(0)">Add</a>
+                        <a class="button extension-addlist-close" href="javascript:void(0)">Close</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <script src="//cdn.webglstats.com/stat.js" defer="defer" async="async"></script>
-    </body>
+    </main>
+
+    <footer>
+        <span class="u-pull-right">Specifications last updated: {{ created|pretty_date }}</span>Glad-Version: {{ glad_version }}
+    </footer>
+</div>
+
+<script src="//cdn.webglstats.com/stat.js" defer="defer" async="async"></script>
+</body>
 </html>

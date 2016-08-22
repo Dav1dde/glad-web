@@ -4,9 +4,8 @@ import tempfile
 import zipfile
 from itertools import izip_longest, chain
 from urllib import urlencode
-from flask import Blueprint, request, render_template, g, url_for, redirect, flash, send_file, current_app
-import glad.lang.c.generator
-from glad.spec import SPECS
+from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
+import glad.spec
 
 
 Version = namedtuple('Version', ['major', 'minor'])
@@ -72,22 +71,10 @@ def write_dir_to_zipfile(path, zipf, exclude=None):
 def glad_generate():
     language, specification, profile, apis, extensions, loader_enabled = validate_form()
 
-    cls = SPECS[specification]
+    cls = glad.spec.SPECIFICATIONS[specification]
     spec = cls.fromstring(g.cache.open_specification(specification).read())
     if spec.NAME == 'gl':
         spec.profile = profile
-
-    generator_cls, loader_cls = glad.lang.get_generator(
-        language, spec.NAME.lower()
-    )
-
-    if loader_cls is None:
-        raise ValueError('API/Spec not yet supported')
-
-    loader = loader_cls(apis)
-    loader.disabled = not loader_enabled
-
-    glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
     # the suffix is required because mkdtemp sometimes creates directories with an
     # underscore at the end, we later use werkzeug.utils.secure_filename on that directory,

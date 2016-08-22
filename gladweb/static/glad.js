@@ -88,20 +88,23 @@ function reset_form() {
     $('#main-form')[0].reset();
     $('#extensions').find('select').multiSelect('deselect_all');
     selection_update();
-};
+}
 
 function show_only_specification(specification) {
     var profile_input = $('#profile-input');
 
-    $('[data-specification]').removeAttr('hidden').removeAttr('disabled');
-    $('[data-specification]:not([data-specification="' + specification + '"])').attr('hidden', 'hidden').attr('disabled', 'disabled');
+    $('[data-specification]')
+        .removeAttr('hidden')
+        .removeAttr('disabled');
+    $('[data-specification]:not([data-specification="' + specification + '"])')
+        .attr('hidden', 'hidden')
+        .attr('disabled', 'disabled');
 
     var options = profile_input.find('option:not([hidden])');
     if (options.length == 0) {
-        profile_input
-            .val('')
-            .attr('disabled', 'disabled');
+        $('#profile').attr('hidden', 'hidden');
     } else {
+        $('#profile').removeAttr('hidden');
         profile_input
             .val(options.val())
             .removeAttr('disabled');

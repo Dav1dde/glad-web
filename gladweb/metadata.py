@@ -1,19 +1,31 @@
 from collections import OrderedDict, namedtuple
-from glad.spec import SPECS
+import glad.lang.c
+import glad.lang.d
+import glad.lang.volt
+import glad.spec
 import time
 import json
 
 
 Language = namedtuple('Language', ['id', 'name'])
 LANGUAGES = [
-    Language('c', 'C/C++'), Language('c-debug', 'C/C++ Debug'),
-    Language('d', 'D'), Language('volt', 'Volt')
+    Language('c', 'C/C++'),
+    Language('d', 'D'),
+    Language('volt', 'Volt')
 ]
+
+GENERATORS = {
+    'c': glad.lang.c.CGenerator,
+    'd': glad.lang.d.DGenerator,
+    'volt': glad.lang.volt.VoltGenerator
+}
 
 Specification = namedtuple('Specification', ['id', 'name'])
 SPECIFICATIONS = [
-    Specification('gl', 'OpenGL'), Specification('egl', 'EGL'),
-    Specification('glx', 'GLX'), Specification('wgl', 'WGL')
+    Specification('gl', 'OpenGL'),
+    Specification('egl', 'EGL'),
+    Specification('glx', 'GLX'),
+    Specification('wgl', 'WGL')
 ]
 
 Profile = namedtuple('Profile', ['id', 'name', 'specification'])
@@ -40,6 +52,8 @@ Extension = namedtuple('Extension', ['id', 'name', 'specification', 'api'])
 #      Extension('GLX_EXT_TEST', 'GLX_EXT_TEST', 'glx', 'glx')
 #  ]
 
+Option = namedtuple('Option', ['id', 'language', 'name', 'description'])
+
 
 class Metadata(object):
     def __init__(self, cache):
@@ -51,6 +65,8 @@ class Metadata(object):
 
         self.apis = list()
         self.extensions = list()
+
+        self.options = list()
 
         self.created = None
 
@@ -71,6 +87,7 @@ class Metadata(object):
             versions = [Version(*v) for v in api[3]]
             self.apis.append(Api(api[0], api[1], api[2], versions, api[4]))
         self.extensions = [Extension(*ext) for ext in data['extensions']]
+        self.options = [Option(*opt) for opt in data['options']]
         self.created = data['created']
 
     def refresh_metadata(self):
@@ -79,7 +96,7 @@ class Metadata(object):
 
         for specification in self.specifications:
             with self.cache.open_specification(specification.id) as f:
-                cls = SPECS[specification.id]
+                cls = glad.spec.SPECIFICATIONS[specification.id]
                 data = cls.fromstring(f.read())
 
             for api, versions in data.features.items():
@@ -96,9 +113,25 @@ class Metadata(object):
                 for name, extension in extensions.items():
                     self.extensions.append(Extension(name, name, specification.id, api))
 
+        self.options = list()
+        for language in LANGUAGES:
+            Generator = GENERATORS[language.id]
+
+            config = Generator.Config()
+
+            # TODO config options other than boolean
+            for name, option in config.items():
+                self.options.append(Option(
+                    name, language.id, name.lower().replace('_', ' '), option.description
+                ))
+
         self.created = time.time()
 
-        self.cache.remove('metadata.json')
+        try:
+            self.cache.remove('metadata.json')
+        except OSError:
+            pass
+
         with self.cache.open('metadata.json', 'w') as f:
             json.dump(self.as_dict(), f)
 
@@ -109,5 +142,6 @@ class Metadata(object):
             'profiles': self.profiles,
             'apis': self.apis,
             'extensions': self.extensions,
+            'options': self.options,
             'created': self.created
         }
