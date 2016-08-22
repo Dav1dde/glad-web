@@ -28,10 +28,7 @@ SPECIFICATIONS = [
     Specification('wgl', 'WGL')
 ]
 
-Profile = namedtuple('Profile', ['id', 'name', 'specification'])
-PROFILES = [
-    Profile('compatibility', 'Compatibility', 'gl'), Profile('core', 'Core', 'gl')
-]
+Profile = namedtuple('Profile', ['id', 'name', 'api'])
 
 Api = namedtuple('Api', ['id', 'name', 'specification', 'versions', 'default'])
 Version = namedtuple('Version', ['id', 'name', 'tuple'])
@@ -61,7 +58,7 @@ class Metadata(object):
 
         self.languages = LANGUAGES[:]
         self.specifications = SPECIFICATIONS[:]
-        self.profiles = PROFILES[:]
+        self.profiles = list()
 
         self.apis = list()
         self.extensions = list()
@@ -74,6 +71,16 @@ class Metadata(object):
             self.refresh_metadata()
         else:
             self.read_metadata()
+
+    def get_specification_for_api(self, api_id):
+        for api in self.apis:
+            if api.id == api_id:
+                specification = api.specification
+                break
+        else:
+            raise ValueError('Unknown API {!r}'.format(api_id))
+
+        return self.cache.get_specification(specification)
 
     def read_metadata(self):
         with self.cache.open('metadata.json') as f:
@@ -92,6 +99,7 @@ class Metadata(object):
 
     def refresh_metadata(self):
         self.apis = list()
+        self.profiles = list()
         self.extensions = list()
 
         for specification in self.specifications:
@@ -108,6 +116,11 @@ class Metadata(object):
 
                 # TODO: set default
                 self.apis.append(Api(api, api, specification.id, v, 'none'))
+
+                profiles = sorted(data.profiles_for_api(api))
+                self.profiles.extend([Profile(
+                    profile.lower(), profile.capitalize(), api
+                ) for profile in profiles])
 
             for api, extensions in data.extensions.items():
                 for name, extension in extensions.items():
@@ -126,11 +139,6 @@ class Metadata(object):
                 ))
 
         self.created = time.time()
-
-        try:
-            self.cache.remove('metadata.json')
-        except OSError:
-            pass
 
         with self.cache.open('metadata.json', 'w') as f:
             json.dump(self.as_dict(), f)

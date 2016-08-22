@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from time import time as timestamp
 
@@ -50,3 +51,18 @@ def pretty_date(time, now=None):
     if day_diff < 365:
         return str(day_diff / 30) + " months ago"
     return str(day_diff / 365) + " years ago"
+
+
+def write_dir_to_zipfile(path, zipf, exclude=None):
+    if exclude is None:
+        exclude = []
+
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if file_ in exclude:
+                continue
+
+            zipf.write(
+                os.path.join(root, file_),
+                os.path.relpath(os.path.join(root, file_), path)
+            )

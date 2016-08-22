@@ -57,46 +57,31 @@
                 </div>
             </section>
 
-            <section id="specification-api">
-                <div class="row">
-                    <div class="six columns" id="specification">
-                        <label for="specification-input">Specification</label>
-                        <select class="u-full-width" name="specification" id="specification-input">
-                            {%  for specification in specifications -%}
-                                <option value="{{ specification.id }}" data->{{ specification.name }}</option>
-                            {%-  endfor %}
-                        </select>
+            <section id="api">
+                <label>APIs</label>
+                {% for api in apis|sort(attribute='name') %}
+                    <div class="row" data-api="{{ api.id }}">
+                        <div class="one column"></div>
+                        <div class="one column"><label for="api-input-{{ api.id }}">{{ api.name }}</label></div>
+                        <div class="six columns">
+                            <select class="u-full-width" data-specification="{{ api.specification }}" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
+                                {% for version in api.versions -%}
+                                    <option value="{{ api.id }}={{ version.id }}" {{ 'selected' if api.default == version.id }}>{{ version.name }}</option>
+                                {%- endfor %}
+                            </select>
+                        </div>
+                        <div class="four columns">
+                            {% set relevant_profiles = profiles|selectattr('api', 'equalto', api.id)|list %}
+                            {% if relevant_profiles|length > 0 %}
+                                <select class="u-full-width" name="profile" id="profile-input-{{ api.id }}">
+                                    {%  for profile in relevant_profiles -%}
+                                        <option value="{{ profile.id }}" data-api="{{ api.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
+                                    {%-  endfor %}
+                                </select>
+                            {% endif %}
+                        </div>
                     </div>
-
-                    <div class="six columns" id="api">
-                        <label for="api-input">API</label>
-                        {%  for api in apis|sort(attribute='name') -%}
-                            <div class="row" data-specification="{{ api.specification }}">
-                                <div class="one column"></div>
-                                <div class="two columns"><label for="api-input-{{ api.id }}">{{ api.name }}</label></div>
-                                <div class="nine columns">
-                                    <select class="u-full-width" data-specification="{{ api.specification }}" name="api" id="api-input-{{ api.id }}" data-api="{{ api.id }}">
-                                        {% for version in api.versions -%}
-                                            <option value="{{ api.id }}={{ version.id }}" {{ 'selected' if api.default == version.id }}>{{ version.name }}</option>
-                                        {%- endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        {%- endfor %}
-                    </div>
-                </div>
-            </section>
-
-            <section id="profile">
-                <div class="six columns" id="profile">
-                    <label for="profile-input">Profile</label>
-                    <select class="u-full-width" name="profile" id="profile-input">
-                        {%  for profile in profiles -%}
-                            <option value="{{ profile.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
-                        {%-  endfor %}
-                        <option class="empty-option" disabled hidden value=""></option>
-                    </select>
-                </div>
+                {% endfor %}
             </section>
 
             <section id="extensions">
@@ -123,16 +108,15 @@
 
             <section id="options">
                 <div class="row">
-                    <label for="profile-input">Options</label>
+                    <label>Options</label>
                     {% for option in options|sort(attribute='name') %}
-                        <div class="row" data-language="{{ option.language }}">
-                            <div class="one column">
-                                <input type="checkbox" name="{{ option.id }}" id="option-{{ option.language }}-{{ option.id }}">
-                            </div>
-                            <div class="two columns">
+                        <div class="row option" data-language="{{ option.language }}">
+                            <div class="one column"></div>
+                            <div class="three columns">
+                                <input type="checkbox" name="option" value="{{ option.id }}" id="option-{{ option.language }}-{{ option.id|lower|replace('_', '-') }}">
                                 <span class="label-body">{{ option.name }}</span>
                             </div>
-                            <div class="nine columns">
+                            <div class="eight columns">
                                 {{ option.description }}
                             </div>
                         </div>

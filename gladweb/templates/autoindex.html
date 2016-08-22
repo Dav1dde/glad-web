@@ -46,8 +46,8 @@
 
 {% block footer %}
     <div class="row">
-        <label>Permalink:</label>
-        <input class="u-full-width" type="text" value="{{ url_for('index.landing', _external=True) }}#{{ g.serialized }}" readonly>
+        <label for="permalink">Permalink:</label>
+        <input id="permalink" class="u-full-width" type="text" value="{{ url_for('index.landing', _external=True) }}#{{ g.serialized }}" readonly>
     </div>
     </div>
 {% endblock %}

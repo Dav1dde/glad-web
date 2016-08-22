@@ -42,15 +42,6 @@ $.fn.deserialize = function (serializedString)
 
     reset_form();
 
-    /* set specification */
-    var specification = data['specification'];
-    if ($.isArray(specification)) {
-        specification = specification[0];
-    }
-    $form.find('[name=specification]').val(specification);
-    delete data['specification'];
-    selection_update();
-
     /* set api */
     if (!$.isArray(data['api'])) {
         data['api'] = [data['api']];
@@ -90,37 +81,13 @@ function reset_form() {
     selection_update();
 }
 
-function show_only_specification(specification) {
-    var profile_input = $('#profile-input');
-
-    $('[data-specification]')
-        .removeAttr('hidden')
-        .removeAttr('disabled');
-    $('[data-specification]:not([data-specification="' + specification + '"])')
-        .attr('hidden', 'hidden')
-        .attr('disabled', 'disabled');
-
-    var options = profile_input.find('option:not([hidden])');
-    if (options.length == 0) {
-        $('#profile').attr('hidden', 'hidden');
-    } else {
-        $('#profile').removeAttr('hidden');
-        profile_input
-            .val(options.val())
-            .removeAttr('disabled');
-    }
-}
-
-
 function selection_update(event) {
-    var specification = $('#specification-input').val();
-
     //$('[data-api]').removeAttr('hidden').removeAttr('disabled');
     $('#extensions').find('select').multiSelect('deselect_all');
-    show_only_specification(specification);
 
+    // Find selected APIs
     var apis = [];
-    $('#api').find('[data-specification="' + specification + '"]').each(function (index, value) {
+    $('#api').find('.row').each(function (index, value) {
         var select = $(value).find('select');
 
         if (select.val() && !select.val().endsWith('none')) {
@@ -131,13 +98,29 @@ function selection_update(event) {
     /* Filter out extensions which do not exist for this API */
     $('#extensions option, #extensions li').each(function (index, option) {
         var e = $(option);
-        if (!any_contains(e.data('api').split(' '), apis)) {
+        if (any_contains(e.data('api').split(' '), apis)) {
+            // Extension is part of at least one of the selected APIs
+            e.removeAttr('hidden');
+            e.removeAttr('disabled');
+        } else {
+            // Extension is not part of at least one selected API
             e.attr('hidden', 'hidden');
             e.attr('disabled', 'disabled');
         }
     });
 
-    /* Remove errors */
+    // Show only relevant options
+    var language = $('#language').find('select').val();
+    $('#options').find('.option[data-language]').attr('hidden', 'hidden');
+    $('#options').find('.option[data-language=' + language + ']').removeAttr('hidden');
+    if ($('#options').find('.option:not([hidden])').length == 0) {
+        // Hide the options section if there are no available options
+        $('#options').attr('hidden', 'hidden');
+    } else {
+        $('#options').removeAttr('hidden');
+    }
+
+    // Remove errors
     if (event) {
         $('#error').remove();
     }
@@ -153,7 +136,7 @@ function add_extensions(extensions) {
 
 
 $(function () {
-    $('#specification-input').change(selection_update);
+    $('#language').find('select').change(selection_update);
     $('#api').find('select').change(selection_update);
     $('.extension-add-list').click(function() { $('#addListModal').css('visibility', 'visible'); });
     $('.extension-addlist-add').click(function() {

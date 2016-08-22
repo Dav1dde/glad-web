@@ -1,12 +1,14 @@
-from collections import namedtuple
 import os
 import tempfile
 import zipfile
+from collections import namedtuple
 from itertools import izip_longest, chain
 from urllib import urlencode
-from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
-import glad.spec
 
+from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
+
+import glad.spec
+from gladweb.util import write_dir_to_zipfile
 
 Version = namedtuple('Version', ['major', 'minor'])
 
@@ -23,11 +25,8 @@ def landing():
 
 def validate_form():
     language = request.form.get('language')
-    specification = request.form.get('specification')
-    profile = request.form.get('profile', 'core')
     apis = request.form.getlist('api')
     extensions = request.form.getlist('extensions')
-    loader = request.form.get('loader') is not None
 
     if language not in (l.id for l in g.metadata.languages):
         raise ValueError('Invalid language "{0}"'.format(language))
@@ -53,28 +52,10 @@ def validate_form():
     return language, specification, profile, apis_parsed, extensions, loader
 
 
-def write_dir_to_zipfile(path, zipf, exclude=None):
-    if exclude is None:
-        exclude = []
-
-    for root, dirs, files in os.walk(path):
-        for file_ in files:
-            if file_ in exclude:
-                continue
-
-            zipf.write(
-                os.path.join(root, file_),
-                os.path.relpath(os.path.join(root, file_), path)
-            )
-
-
 def glad_generate():
     language, specification, profile, apis, extensions, loader_enabled = validate_form()
 
-    cls = glad.spec.SPECIFICATIONS[specification]
-    spec = cls.fromstring(g.cache.open_specification(specification).read())
-    if spec.NAME == 'gl':
-        spec.profile = profile
+    g.metadata.get_specification_for_api()
 
     # the suffix is required because mkdtemp sometimes creates directories with an
     # underscore at the end, we later use werkzeug.utils.secure_filename on that directory,

@@ -6,6 +6,7 @@ import werkzeug
 from contextlib import closing
 from glad.parse import Spec
 from glad.opener import URLOpener
+import glad.spec
 
 
 KHRPLATFORM_URL = 'https://www.khronos.org/registry/egl/api/KHR/khrplatform.h'
@@ -76,6 +77,11 @@ class FileCache(object):
             self.opener.urlretrieve(Spec.API + filename, self.get_path(filename))
 
         return self.open(filename, mode=mode)
+
+    def get_specification(self, specification):
+        cls = glad.spec.SPECIFICATIONS[specification]
+        with self.open_specification(specification) as specification_xml:
+            return cls.fromstring(specification_xml.read())
 
     def get_khrplatform(self):
         path = self.get_path('khrplatform.h')
