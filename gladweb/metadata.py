@@ -82,6 +82,13 @@ class Metadata(object):
 
         return self.cache.get_specification(specification)
 
+    def get_generator_for_language(self, language):
+        try:
+            return GENERATORS[language]
+        except KeyError:
+            raise ValueError('Invalid or Unknown language {}'.format(language))
+
+
     def read_metadata(self):
         with self.cache.open('metadata.json') as f:
             data = json.load(f)

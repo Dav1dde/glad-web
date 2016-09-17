@@ -51,23 +51,30 @@ $.fn.deserialize = function (serializedString)
         var api = tmp[0];
         var ver = tmp[1];
 
-        $form.find('select[data-specification=' + specification + '][data-api=' + api + ']').val(apistr);
+        $form.find('select[name=api][data-api=' + api + ']').val(apistr);
     });
     selection_update();
 
     /* set language */
     $form.find('select[name=language]').val(data['language']);
 
-    /* set profile */
-    $form.find('select[name=profile]').val(data['profile']);
+    $.each(data['profile'], function(i, profilestr) {
+        var tmp = profilestr.split('=', 2);
+        var api = tmp[0];
+        var profile = tmp[1];
+
+        $form.find('select[name=profile][data-api=' + api + ']').val(profilestr);
+    });
 
     /* set extensions */
     $.each([].concat((data['extensions'] || [])), function(i, ext) {
         $form.find('select[name=extensions]').multiSelect('select', ext);
     });
 
-    /* set loader */
-    $form.find('input[name=loader]').prop('checked', data['loader'] !== null && !!data['loader']);
+    /* set options */
+    $.each(data['option'], function(i, option) {
+        $form.find('input[name=option][value=' + option + ']').attr('checked', true);
+    });
 
     return this;
 };

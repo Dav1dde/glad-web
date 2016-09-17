@@ -8,6 +8,7 @@ from urllib import urlencode
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
 
 import glad.spec
+from glad.util import parse_version
 from gladweb.util import write_dir_to_zipfile
 
 Version = namedtuple('Version', ['major', 'minor'])
@@ -23,62 +24,53 @@ def landing():
     )
 
 
-def validate_form():
-    language = request.form.get('language')
-    apis = request.form.getlist('api')
-    extensions = request.form.getlist('extensions')
-
-    if language not in (l.id for l in g.metadata.languages):
-        raise ValueError('Invalid language "{0}"'.format(language))
-
-    if specification not in (s.id for s in g.metadata.specifications):
-        raise ValueError('Invalid specification "{0}"'.format(specification))
-
-    if profile not in (p.id for p in g.metadata.profiles):
-        raise ValueError('Invalid profile "{0}"'.format(profile))
-
-    apis_parsed = dict()
-    for api in apis:
-        name, version = api.split('=')
-        if version == 'none':
-            continue
-        apis_parsed[name] = Version(*map(int, version.split('.')))
-
-    if len(apis_parsed) == 0:
-        raise ValueError(
-            'No API for specification selected'.format(specification)
-        )
-
-    return language, specification, profile, apis_parsed, extensions, loader
-
-
 def glad_generate():
-    language, specification, profile, apis, extensions, loader_enabled = validate_form()
+    # Form data
+    apis = dict(api.split('=') for api in request.form.getlist('api'))
+    profiles = dict(p.split('=') for p in request.form.getlist('profile'))
+    language = request.form.get('language')
+    extensions = request.form.getlist('extensions')
+    options = request.form.getlist('option')
 
-    g.metadata.get_specification_for_api()
-
+    # Other
     # the suffix is required because mkdtemp sometimes creates directories with an
     # underscore at the end, we later use werkzeug.utils.secure_filename on that directory,
     # this function happens to strip underscores...
-    directory = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
-    os.chmod(directory, 0o750)
-    with generator_cls(directory, spec, apis, extensions, loader) as generator:
-        generator.generate()
+    out_path = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
+    os.chmod(out_path, 0o750)
 
-    zip_path = os.path.join(directory, 'glad.zip')
-    with open(zip_path, 'w') as fobj:
-        zipf = zipfile.ZipFile(fobj, mode='w')
-        write_dir_to_zipfile(directory, zipf, exclude=['glad.zip'])
-        zipf.close()
+    for api, version in apis.items():
+        if version.lower().strip() == 'none':
+            version = None
+        version = parse_version(version)
+        profile = profiles.get(api)
+
+        specification = g.metadata.get_specification_for_api(api)
+
+        feature_set = specification.select(api, version, profile, extensions)
+
+        Generator = g.metadata.get_generator_for_language(language)
+        config = Generator.Config()
+        # TODO: more than just boolean configs
+        for option in options:
+            config.set(option, True)
+        config.validate()
+
+        generator = Generator(out_path)
+        generator.generate(specification, feature_set, config)
+
+    with zipfile.ZipFile(os.path.join(out_path, 'glad.zip'), mode='w') as zipf:
+        write_dir_to_zipfile(out_path, zipf, exclude=['glad.zip'])
 
     serialized = urlencode(list(chain.from_iterable(
         izip_longest('', x[1], fillvalue=x[0]) for x in request.form.lists())
     ))
-    serialized_path = os.path.join(directory, '.serialized')
+    # Poor mans database
+    serialized_path = os.path.join(out_path, '.serialized')
     with open(serialized_path, 'w') as fobj:
         fobj.write(serialized)
 
-    name = os.path.split(directory)[1]
+    name = os.path.split(out_path)[1]
     if current_app.config['FREEZE']:
         current_app.freezer.freeze(name)
     return url_for('generated.autoindex', root=name)

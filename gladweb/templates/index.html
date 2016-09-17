@@ -73,9 +73,9 @@
                         <div class="four columns">
                             {% set relevant_profiles = profiles|selectattr('api', 'equalto', api.id)|list %}
                             {% if relevant_profiles|length > 0 %}
-                                <select class="u-full-width" name="profile" id="profile-input-{{ api.id }}">
+                                <select class="u-full-width" name="profile" data-api="{{ api.id }}" id="profile-input-{{ api.id }}">
                                     {%  for profile in relevant_profiles -%}
-                                        <option value="{{ profile.id }}" data-api="{{ api.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
+                                        <option value="{{ api.id }}={{ profile.id }}" data-api="{{ api.id }}" data-specification="{{ profile.specification }}">{{ profile.name }}</option>
                                     {%-  endfor %}
                                 </select>
                             {% endif %}
