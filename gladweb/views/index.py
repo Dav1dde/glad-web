@@ -41,7 +41,8 @@ def glad_generate():
 
     for api, version in apis.items():
         if version.lower().strip() == 'none':
-            version = None
+            continue
+
         version = parse_version(version)
         profile = profiles.get(api)
 
