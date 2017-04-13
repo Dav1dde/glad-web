@@ -9,7 +9,7 @@ from glad.opener import URLOpener
 import glad.spec
 
 
-KHRPLATFORM_URL = 'https://www.khronos.org/registry/egl/api/KHR/khrplatform.h'
+KHRPLATFORM_URL = 'https://raw.githubusercontent.com/KhronosGroup/EGL-Registry/master/api/KHR/khrplatform.h'
 
 
 def generate_filename(allowed_chars, extension=''):
@@ -43,15 +43,18 @@ class FileCache(object):
 
     def refresh(self):
         for name in self.SPECIFICATIONS:
+            base_url = glad.spec.SPECIFICATIONS[name].API
             filename = '{0}.xml'.format(name.lower())
-            # we download, if this fails it is fine, if it success we overwrite
-            with closing(self.opener.urlopen(Spec.API + filename)) as src:
+            # we download, if this fails it is fine, if it succeeds we overwrite
+            with closing(self.opener.urlopen(base_url + filename)) as src:
+                data = src.read()
                 with self.open(filename, 'w') as dst:
-                    dst.write(src.read())
+                    dst.write(data)
 
         with closing(self.opener.urlopen(KHRPLATFORM_URL)) as src:
+            data = src.read()
             with self.open('khrplatform.h', 'w') as dst:
-                dst.write(src.read())
+                dst.write(data)
 
     def get_path(self, filename):
         filename = werkzeug.utils.secure_filename(filename)
@@ -74,7 +77,9 @@ class FileCache(object):
             raise ValueError('Invalid specification name "{0}".'.format(name))
         filename = '{0}.xml'.format(name.lower())
         if not self.exists(filename):
-            self.opener.urlretrieve(Spec.API + filename, self.get_path(filename))
+            Specification = glad.spec.SPECIFICATIONS[name].API
+            url = Specification.API + Specification.NAME + '.xml'
+            self.opener.urlretrieve(url + filename, self.get_path(filename))
 
         return self.open(filename, mode=mode)
 
