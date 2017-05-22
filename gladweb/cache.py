@@ -4,9 +4,11 @@ import shutil
 import string
 import werkzeug
 from contextlib import closing
-from glad.parse import Spec
 from glad.opener import URLOpener
-
+try:
+    from glad.spec import SPECIFICATIONS
+except ImportError:
+    from glad.spec import SPECS as SPECIFICATIONS
 
 KHRPLATFORM_URL = 'https://raw.githubusercontent.com/KhronosGroup/EGL-Registry/master/api/KHR/khrplatform.h'
 
@@ -42,7 +44,7 @@ class FileCache(object):
 
     def refresh(self):
         for name in self.SPECIFICATIONS:
-            base_url = glad.spec.SPECIFICATIONS[name].API
+            base_url = SPECIFICATIONS[name].API
             filename = '{0}.xml'.format(name.lower())
             # we download, if this fails it is fine, if it succeeds we overwrite
             with closing(self.opener.urlopen(base_url + filename)) as src:
@@ -76,7 +78,7 @@ class FileCache(object):
             raise ValueError('Invalid specification name "{0}".'.format(name))
         filename = '{0}.xml'.format(name.lower())
         if not self.exists(filename):
-            Specification = glad.spec.SPECIFICATIONS[name].API
+            Specification = SPECIFICATIONS[name].API
             url = Specification.API + Specification.NAME + '.xml'
             self.opener.urlretrieve(url + filename, self.get_path(filename))
 
