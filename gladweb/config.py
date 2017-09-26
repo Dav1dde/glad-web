@@ -3,8 +3,8 @@
 # ---
 
 import os
-import gladweb.cache
 
+import gladweb.cache
 
 base_path = os.path.abspath(os.path.join(os.path.split(__file__)[0], '..'))
 
@@ -21,7 +21,10 @@ SECRET_KEY = 'ChangeMeOrGetHacked'
 # Glad Web
 # ---
 # A cache, which will be used to store/retrieve various files.
-CACHE = gladweb.cache.FileCache(os.path.join(base_path, 'cache'))
+cache_path = os.path.join(base_path, 'cache')
+if not os.path.exists(cache_path):
+    os.makedirs(cache_path)
+CACHE = gladweb.cache.FileCache(cache_path)
 
 # Path to a folder which will be used to store generation results
 TEMP = os.path.join(base_path, 'temp')

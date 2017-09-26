@@ -1,13 +1,13 @@
-from collections import OrderedDict, namedtuple
-from glad.spec import SPECS
-import time
 import json
+import time
+from collections import namedtuple
 
+from glad.spec import SPECS
 
 Language = namedtuple('Language', ['id', 'name'])
 LANGUAGES = [
     Language('c', 'C/C++'), Language('c-debug', 'C/C++ Debug'),
-    Language('d', 'D'), Language('volt', 'Volt')
+    Language('d', 'D'), Language('volt', 'Volt'), Language('nim', 'Nim')
 ]
 
 Specification = namedtuple('Specification', ['id', 'name'])

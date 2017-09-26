@@ -2,13 +2,17 @@ import os
 import random
 import shutil
 import string
-import werkzeug
 from contextlib import closing
+
+import werkzeug
+
 from glad.opener import URLOpener
+
 try:
     from glad.spec import SPECIFICATIONS
 except ImportError:
     from glad.spec import SPECS as SPECIFICATIONS
+
 
 KHRPLATFORM_URL = 'https://raw.githubusercontent.com/KhronosGroup/EGL-Registry/master/api/KHR/khrplatform.h'
 
@@ -39,7 +43,7 @@ class FileCache(object):
         path = self.get_path(filename)
         if os.path.isfile(path) or os.path.islink(path):
             os.remove(path)
-        else:
+        elif os.path.isdir(path):
             shutil.rmtree(path)
 
     def refresh(self):
@@ -78,9 +82,9 @@ class FileCache(object):
             raise ValueError('Invalid specification name "{0}".'.format(name))
         filename = '{0}.xml'.format(name.lower())
         if not self.exists(filename):
-            Specification = SPECIFICATIONS[name].API
+            Specification = SPECIFICATIONS[name]
             url = Specification.API + Specification.NAME + '.xml'
-            self.opener.urlretrieve(url + filename, self.get_path(filename))
+            self.opener.urlretrieve(url, self.get_path(filename))
 
         return self.open(filename, mode=mode)
 
