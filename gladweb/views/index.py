@@ -29,6 +29,7 @@ def validate_form():
     apis = request.form.getlist('api')
     extensions = request.form.getlist('extensions')
     loader = request.form.get('loader') is not None
+    omitkhr = request.form.get('omitkhr') is not None
 
     if language not in (l.id for l in g.metadata.languages):
         raise ValueError('Invalid language "{0}"'.format(language))
@@ -51,7 +52,7 @@ def validate_form():
             'No API for specification selected'.format(specification)
         )
 
-    return language, specification, profile, apis_parsed, extensions, loader
+    return language, specification, profile, apis_parsed, extensions, loader, omitkhr
 
 
 def write_dir_to_zipfile(path, zipf, exclude=None):
@@ -70,7 +71,7 @@ def write_dir_to_zipfile(path, zipf, exclude=None):
 
 
 def glad_generate():
-    language, specification, profile, apis, extensions, loader_enabled = validate_form()
+    language, specification, profile, apis, extensions, loader_enabled, omitkhr = validate_form()
 
     cls = SPECS[specification]
     spec = cls.fromstring(g.cache.open_specification(specification).read())
@@ -94,7 +95,7 @@ def glad_generate():
     # this function happens to strip underscores...
     directory = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
     os.chmod(directory, 0o750)
-    with generator_cls(directory, spec, apis, extensions, loader) as generator:
+    with generator_cls(directory, spec, apis, extensions, loader, omit_khrplatform=omitkhr) as generator:
         generator.generate()
 
     zip_path = os.path.join(directory, 'glad.zip')
