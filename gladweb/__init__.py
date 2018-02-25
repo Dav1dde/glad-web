@@ -6,6 +6,7 @@ from gladweb.freezer import Freezer
 from gladweb.metadata import Metadata
 import gladweb.util
 import logging
+import json
 import sys
 import os
 
@@ -85,7 +86,7 @@ def create_application(debug=False, verbose=False):
         serialized_path = os.path.join(browse_root, '.serialized')
         if os.path.exists(serialized_path):
             with open(serialized_path) as fobj:
-                g.serialized = fobj.read().strip()
+                g.serialized = json.load(fobj)
         return idx.render_autoindex(
             path,
             browse_root=browse_root,

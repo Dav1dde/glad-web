@@ -20,6 +20,20 @@
 
 
 {% block table %}
+    {% set messages = g.serialized.messages %}
+    {% if messages %}
+        <section id="error">
+            <div class="row">
+                <h6>Warnings/Errors:</h6>
+                {% for message in messages %}
+                    <div class="twelve columns">
+                        {{  message }}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
     <div class="aidx">
         <table>
             <thead>
@@ -47,7 +61,7 @@
 {% block footer %}
     <div class="row">
         <label>Permalink:</label>
-        <input class="u-full-width" type="text" value="{{ url_for('index.landing', _external=True) }}#{{ g.serialized }}" readonly>
+        <input class="u-full-width" type="text" value="{{ url_for('index.landing', _external=True) }}#{{ g.serialized.params }}" readonly>
     </div>
     </div>
 {% endblock %}

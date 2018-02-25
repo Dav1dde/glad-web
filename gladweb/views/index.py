@@ -2,6 +2,7 @@ from collections import namedtuple
 import os
 import tempfile
 import zipfile
+import json
 from itertools import izip_longest, chain
 from urllib import urlencode
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, send_file, current_app
@@ -25,11 +26,13 @@ def landing():
 def validate_form():
     language = request.form.get('language')
     specification = request.form.get('specification')
-    profile = request.form.get('profile', 'core')
+    profile = request.form.get('profile', 'compatibility')
     apis = request.form.getlist('api')
     extensions = request.form.getlist('extensions')
     loader = request.form.get('loader') is not None
     omitkhr = request.form.get('omitkhr') is not None
+
+    messages = list()
 
     if language not in (l.id for l in g.metadata.languages):
         raise ValueError('Invalid language "{0}"'.format(language))
@@ -52,7 +55,11 @@ def validate_form():
             'No API for specification selected'.format(specification)
         )
 
-    return language, specification, profile, apis_parsed, extensions, loader, omitkhr
+    if not profile == 'compatibility' and ('gles1' in apis_parsed or 'gles2' in apis_parsed):
+        messages.append('Core profile not available when selecting any gles API, automatically changed')
+        profile = 'compatibility'
+
+    return messages, language, specification, profile, apis_parsed, extensions, loader, omitkhr
 
 
 def write_dir_to_zipfile(path, zipf, exclude=None):
@@ -71,7 +78,7 @@ def write_dir_to_zipfile(path, zipf, exclude=None):
 
 
 def glad_generate():
-    language, specification, profile, apis, extensions, loader_enabled, omitkhr = validate_form()
+    messages, language, specification, profile, apis, extensions, loader_enabled, omitkhr = validate_form()
 
     cls = SPECS[specification]
     spec = cls.fromstring(g.cache.open_specification(specification).read())
@@ -109,7 +116,7 @@ def glad_generate():
     ))
     serialized_path = os.path.join(directory, '.serialized')
     with open(serialized_path, 'w') as fobj:
-        fobj.write(serialized)
+        json.dump({'params': serialized, 'messages': messages}, fobj)
 
     name = os.path.split(directory)[1]
     if current_app.config['FREEZE']:
