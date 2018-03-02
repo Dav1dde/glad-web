@@ -77,6 +77,8 @@ $.fn.deserialize = function (serializedString)
 
     /* set loader */
     $form.find('input[name=loader]').prop('checked', data['loader'] !== null && !!data['loader']);
+    $form.find('input[name=localfiles]').prop('checked', data['localfiles'] !== null && !!data['localfiles']);
+    $form.find('input[name=omitkhr]').prop('checked', data['omitkhr'] !== null && !!data['omitkhr']);
 
     return this;
 };

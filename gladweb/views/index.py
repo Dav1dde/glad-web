@@ -31,6 +31,7 @@ def validate_form():
     extensions = request.form.getlist('extensions')
     loader = request.form.get('loader') is not None
     omitkhr = request.form.get('omitkhr') is not None
+    local_files = request.form.get('localfiles') is not None
 
     messages = list()
 
@@ -59,7 +60,7 @@ def validate_form():
         messages.append('Core profile not available when selecting any gles API, automatically changed')
         profile = 'compatibility'
 
-    return messages, language, specification, profile, apis_parsed, extensions, loader, omitkhr
+    return messages, language, specification, profile, apis_parsed, extensions, loader, omitkhr, local_files
 
 
 def write_dir_to_zipfile(path, zipf, exclude=None):
@@ -78,7 +79,8 @@ def write_dir_to_zipfile(path, zipf, exclude=None):
 
 
 def glad_generate():
-    messages, language, specification, profile, apis, extensions, loader_enabled, omitkhr = validate_form()
+    # this is really getting ugly, where did my code quality standards go?
+    messages, language, specification, profile, apis, extensions, loader_enabled, omitkhr, local_files = validate_form()
 
     cls = SPECS[specification]
     spec = cls.fromstring(g.cache.open_specification(specification).read())
@@ -102,7 +104,7 @@ def glad_generate():
     # this function happens to strip underscores...
     directory = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
     os.chmod(directory, 0o750)
-    with generator_cls(directory, spec, apis, extensions, loader, omit_khrplatform=omitkhr) as generator:
+    with generator_cls(directory, spec, apis, extensions, loader, local_files=local_files, omit_khrplatform=omitkhr) as generator:
         generator.generate()
 
     zip_path = os.path.join(directory, 'glad.zip')
