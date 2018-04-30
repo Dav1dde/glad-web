@@ -7,7 +7,6 @@ from urllib import urlencode
 
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
 
-import glad.spec
 from glad.util import parse_version
 from gladweb.util import write_dir_to_zipfile
 
@@ -48,6 +47,7 @@ def glad_generate():
 
         specification = g.metadata.get_specification_for_api(api)
 
+        # TODO extension filtering (GLES and GL)
         feature_set = specification.select(api, version, profile, extensions)
 
         Generator = g.metadata.get_generator_for_language(language)

@@ -1,32 +1,20 @@
-from collections import OrderedDict, namedtuple
-import glad.lang.c
-import glad.lang.d
-import glad.lang.volt
-import glad.spec
+from collections import namedtuple
 import time
 import json
 
+from glad.plugin import find_generators, find_specifications
 
 Language = namedtuple('Language', ['id', 'name'])
-LANGUAGES = [
-    Language('c', 'C/C++'),
-    Language('d', 'D'),
-    Language('volt', 'Volt')
-]
 
-GENERATORS = {
-    'c': glad.lang.c.CGenerator,
-    'd': glad.lang.d.DGenerator,
-    'volt': glad.lang.volt.VoltGenerator
-}
+LANGUAGES = list()
+GENERATORS = dict()
+
+for language, generator in find_generators().items():
+    GENERATORS[language] = generator
+    LANGUAGES.append(Language(language, generator.DISPLAY_NAME or language))
 
 Specification = namedtuple('Specification', ['id', 'name'])
-SPECIFICATIONS = [
-    Specification('gl', 'OpenGL'),
-    Specification('egl', 'EGL'),
-    Specification('glx', 'GLX'),
-    Specification('wgl', 'WGL')
-]
+SPECIFICATIONS = [Specification(name, s.DISPLAY_NAME) for name, s in find_specifications().items()]
 
 Profile = namedtuple('Profile', ['id', 'name', 'api'])
 
@@ -111,7 +99,7 @@ class Metadata(object):
 
         for specification in self.specifications:
             with self.cache.open_specification(specification.id) as f:
-                cls = glad.spec.SPECIFICATIONS[specification.id]
+                cls = find_specifications()[specification.id]
                 data = cls.fromstring(f.read())
 
             for api, versions in data.features.items():
