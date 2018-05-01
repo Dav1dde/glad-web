@@ -22,6 +22,10 @@ SECRET_KEY = 'ChangeMeOrGetHacked'
 # ---
 # A cache, which will be used to store/retrieve various files.
 CACHE = gladweb.cache.FileCache(os.path.join(base_path, 'cache'))
+# Opener which will be used for remote calls
+OPENER = gladweb.cache.CachingOpener(CACHE)
+# Metadata object to store specification metadata
+METADATA = gladweb.metadata.Metadata(CACHE, OPENER)
 
 # Path to a folder which will be used to store generation results
 TEMP = os.path.join(base_path, 'temp')

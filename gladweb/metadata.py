@@ -7,10 +7,7 @@ from glad.plugin import find_generators, find_specifications
 Language = namedtuple('Language', ['id', 'name'])
 
 LANGUAGES = list()
-GENERATORS = dict()
-
 for language, generator in find_generators().items():
-    GENERATORS[language] = generator
     LANGUAGES.append(Language(language, generator.DISPLAY_NAME or language))
 
 Specification = namedtuple('Specification', ['id', 'name'])
@@ -41,8 +38,9 @@ Option = namedtuple('Option', ['id', 'language', 'name', 'description'])
 
 
 class Metadata(object):
-    def __init__(self, cache):
+    def __init__(self, cache, opener):
         self.cache = cache
+        self.opener = opener
 
         self.languages = LANGUAGES[:]
         self.specifications = SPECIFICATIONS[:]
@@ -68,14 +66,13 @@ class Metadata(object):
         else:
             raise ValueError('Unknown API {!r}'.format(api_id))
 
-        return self.cache.get_specification(specification)
+        return find_specifications()[specification].from_remote(opener=self.opener)
 
     def get_generator_for_language(self, language):
         try:
-            return GENERATORS[language]
+            return find_generators()[language]
         except KeyError:
             raise ValueError('Invalid or Unknown language {}'.format(language))
-
 
     def read_metadata(self):
         with self.cache.open('metadata.json') as f:
@@ -98,9 +95,7 @@ class Metadata(object):
         self.extensions = list()
 
         for specification in self.specifications:
-            with self.cache.open_specification(specification.id) as f:
-                cls = find_specifications()[specification.id]
-                data = cls.fromstring(f.read())
+            data = find_specifications()[specification.id].from_remote(opener=self.opener)
 
             for api, versions in data.features.items():
                 v = list()
@@ -123,7 +118,7 @@ class Metadata(object):
 
         self.options = list()
         for language in LANGUAGES:
-            Generator = GENERATORS[language.id]
+            Generator = self.get_generator_for_language(language.id)
 
             config = Generator.Config()
 

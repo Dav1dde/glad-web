@@ -57,7 +57,7 @@ def glad_generate():
             config.set(option, True)
         config.validate()
 
-        generator = Generator(out_path)
+        generator = Generator(out_path, opener=g.opener)
         generator.generate(specification, feature_set, config)
 
     with zipfile.ZipFile(os.path.join(out_path, 'glad.zip'), mode='w') as zipf:

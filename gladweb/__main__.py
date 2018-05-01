@@ -10,16 +10,13 @@ import os
 def init(ns):
     import gladweb.config
 
-    _refresh_metadata(gladweb.config.CACHE)
+    _refresh_metadata(gladweb.config.CACHE, gladweb.config.METADATA)
 
 
-def _refresh_metadata(cache, diff=60):
-    from gladweb.metadata import Metadata
-
-    m = Metadata(cache)
-    if time.time() - m.created > diff:
-        cache.refresh()
-        m.refresh_metadata()
+def _refresh_metadata(cache, metadata, diff=60):
+    if time.time() - metadata.created > diff:
+        cache.clear()
+        metadata.refresh_metadata()
 
 
 def www(ns):
@@ -37,7 +34,7 @@ def cron(ns):
         )
 
     diff = ns.age * 60 * 60 if ns.age >= 0 else 0
-    _refresh_metadata(gladweb.config.CACHE, diff)
+    _refresh_metadata(gladweb.config.CACHE, gladweb.config.METADATA, diff=diff)
 
     if ns.age < 0:
         return

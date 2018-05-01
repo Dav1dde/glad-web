@@ -1,101 +1,70 @@
+import hashlib
 import os
-import random
 import shutil
-import string
 import werkzeug
 from contextlib import closing
 
 from glad.opener import URLOpener
-from glad.plugin import find_specifications
+from gladweb.util import remove_file_or_dir
 
-
-KHRPLATFORM_URL = 'https://raw.githubusercontent.com/KhronosGroup/EGL-Registry/master/api/KHR/khrplatform.h'
-
-
-def generate_filename(allowed_chars, extension=''):
-    return '{0}.{1}'.format(
-        ''.join(random.sample(allowed_chars, random.randint(5, 15))),
-        extension
-    )
-
-
-# TODO get rid of continuous find_specifications calls
-# TODO cache elgplatform etc.
 class FileCache(object):
-    SPECIFICATIONS = ('egl', 'gl', 'glx', 'wgl')
-
-    def __init__(self, path, opener=None):
+    def __init__(self, path):
         self.path = os.path.abspath(path)
-        self.opener = opener
-        if self.opener is None:
-            self.opener = URLOpener.default()
 
-        self._allowed_chars = string.ascii_letters + string.digits
+        self._gen_funcs = dict()
+
+    def register(self, name, gen_func):
+        self._gen_funcs[name] = gen_func
+
+        with closing(gen_func()) as src:
+            with self.open(name, 'wb') as dst:
+                # TODO very memory inefficient
+                dst.write(src.read())
 
     def clear(self):
         for name in os.listdir(self.path):
-            self.remove(name)
+            remove_file_or_dir(os.path.join(self.path, name))
 
     def remove(self, filename):
-        path = self.get_path(filename)
-        if os.path.isfile(path) or os.path.islink(path):
-            os.remove(path)
-        else:
-            shutil.rmtree(path)
-
-    def refresh(self):
-        for name in self.SPECIFICATIONS:
-            base_url = find_specifications()[name].API
-            filename = '{0}.xml'.format(name.lower())
-            # we download, if this fails it is fine, if it succeeds we overwrite
-            with closing(self.opener.urlopen(base_url + filename)) as src:
-                data = src.read()
-                with self.open(filename, 'w') as dst:
-                    dst.write(data)
-
-        with closing(self.opener.urlopen(KHRPLATFORM_URL)) as src:
-            data = src.read()
-            with self.open('khrplatform.h', 'w') as dst:
-                dst.write(data)
+        remove_file_or_dir(self.get_path(filename))
 
     def get_path(self, filename):
         filename = werkzeug.utils.secure_filename(filename)
         return os.path.join(self.path, filename)
 
-    def open_unique_file(self, mode='rb', extension=''):
-        # there might be race conditions, do we care?
-        name = generate_filename(self._allowed_chars, extension=extension)
-        while self.exists(name):
-            name = generate_filename(self._allowed_chars, extension=extension)
-
-        return self.get_path(name), self.open(name, mode=mode)
-
     def open(self, filename, mode='rb'):
         return open(self.get_path(filename), mode=mode)
 
-    def open_specification(self, name, mode='rb'):
-        name = name.lower()
-        if name not in self.SPECIFICATIONS:
-            raise ValueError('Invalid specification name "{0}".'.format(name))
-        filename = '{0}.xml'.format(name.lower())
-        if not self.exists(filename):
-            Specification = find_specifications()[name].API
-            url = Specification.API + Specification.NAME + '.xml'
-            self.opener.urlretrieve(url + filename, self.get_path(filename))
-
-        return self.open(filename, mode=mode)
-
-    def get_specification(self, specification):
-        cls = find_specifications()[specification]
-        with self.open_specification(specification) as specification_xml:
-            return cls.fromstring(specification_xml.read())
-
-    def get_khrplatform(self):
-        path = self.get_path('khrplatform.h')
-        if not self.exists('khrplatform.h'):
-            self.opener.urlretrieve(KHRPLATFORM_URL, path)
-
-        return path
-
     def exists(self, filename):
         return os.path.exists(self.get_path(filename))
+
+
+class CachingOpener(URLOpener):
+    def __init__(self, cache):
+        URLOpener.__init__(self)
+
+        self.cache = cache
+
+    def build_key(self, url, data=None):
+        h = hashlib.md5()
+        h.update(url.encode('utf-8'))
+        if data is not None:
+            h.update(data.encode('utf-8'))
+
+        name = url.split('?')[0].split('#')[0].split('/')[-1]
+        return name + '_' + h.hexdigest()
+
+    def urlopen(self, url, data=None, *args, **kwargs):
+        key = self.build_key(url, data=data)
+        if not self.cache.exists(key):
+            self.cache.register(key, lambda: URLOpener.urlopen(self, url, data, *args, **kwargs))
+
+        return self.cache.open(key)
+
+    def urlretrieve(self, url, filename, data=None):
+        key = self.build_key(url, data=data)
+        if not self.cache.exists(key):
+            self.cache.register(key, lambda: URLOpener.urlopen(self, url, data))
+
+        url = 'file://' + self.cache.get_path(key)
+        return URLOpener.urlretrieve(self, url, filename, data)

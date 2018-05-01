@@ -12,6 +12,7 @@ import os
 
 class LevelFilter(logging.Filter):
     def __init__(self, levels):
+        logging.Filter.__init__(self)
         self.levels = levels
 
     def filter(self, rec):
@@ -69,7 +70,8 @@ def create_application(debug=False, verbose=False):
     @app.before_request
     def before_request():
         g.cache = app.config['CACHE']
-        g.metadata = Metadata(g.cache)
+        g.opener = app.config['OPENER']
+        g.metadata = app.config['METADATA']
 
     from gladweb.views.index import index
     app.register_blueprint(index)

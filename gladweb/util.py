@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from time import time as timestamp
 
+import shutil
+
 
 def convert_if_timestamp(time):
     if isinstance(time, int) or isinstance(time, float):
@@ -66,3 +68,10 @@ def write_dir_to_zipfile(path, zipf, exclude=None):
                 os.path.join(root, file_),
                 os.path.relpath(os.path.join(root, file_), path)
             )
+
+
+def remove_file_or_dir(path):
+    if os.path.isfile(path) or os.path.islink(path):
+        os.remove(path)
+    else:
+        shutil.rmtree(path)
