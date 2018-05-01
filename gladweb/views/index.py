@@ -47,8 +47,8 @@ def glad_generate():
 
         specification = g.metadata.get_specification_for_api(api)
 
-        # TODO extension filtering (GLES and GL)
-        feature_set = specification.select(api, version, profile, extensions)
+        filtered_extensions = [ext for ext in extensions if specification.is_extension(api, ext)]
+        feature_set = specification.select(api, version, profile, filtered_extensions)
 
         Generator = g.metadata.get_generator_for_language(language)
         config = Generator.Config()
