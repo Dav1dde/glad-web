@@ -56,10 +56,6 @@ def validate_form():
             'No API for specification selected'.format(specification)
         )
 
-    if not profile == 'compatibility' and ('gles1' in apis_parsed or 'gles2' in apis_parsed):
-        messages.append('Core profile not available when selecting any gles API, automatically changed')
-        profile = 'compatibility'
-
     return messages, language, specification, profile, apis_parsed, extensions, loader, omitkhr, local_files
 
 
