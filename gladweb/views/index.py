@@ -2,11 +2,12 @@ import os
 import tempfile
 import zipfile
 from collections import namedtuple
-from itertools import izip_longest, chain
+from itertools import izip_longest, chain, groupby
 from urllib import urlencode
 
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
 
+from glad.parse import FeatureSet
 from glad.util import parse_version
 from gladweb.util import write_dir_to_zipfile
 
@@ -29,7 +30,7 @@ def glad_generate():
     profiles = dict(p.split('=') for p in request.form.getlist('profile'))
     language = request.form.get('language')
     extensions = request.form.getlist('extensions')
-    options = request.form.getlist('option')
+    options = set(request.form.getlist('option'))
 
     # Other
     # the suffix is required because mkdtemp sometimes creates directories with an
@@ -38,27 +39,37 @@ def glad_generate():
     out_path = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
     os.chmod(out_path, 0o750)
 
-    for api, version in apis.items():
-        if version.lower().strip() == 'none':
-            continue
+    merge = 'MERGE' in options
+    if merge:
+        options.remove('MERGE')
 
-        version = parse_version(version)
+    Generator = g.metadata.get_generator_for_language(language)
+    config = Generator.Config()
+    # TODO: more than just boolean configs
+    for option in options:
+        config.set(option, True)
+    config.validate()
+    generator = Generator(out_path, opener=g.opener)
+
+    apis_by_spec = groupby(
+        [(api, version) for api, version in apis.items() if not version.lower().strip() == 'none'],
+        key=lambda api_version: g.metadata.get_specification_name_for_api(api_version[0])
+    )
+
+    def select(specification, api, version):
         profile = profiles.get(api)
-
-        specification = g.metadata.get_specification_for_api(api)
-
         filtered_extensions = [ext for ext in extensions if specification.is_extension(api, ext)]
-        feature_set = specification.select(api, version, profile, filtered_extensions)
+        return generator.select(specification, api, version, profile, filtered_extensions, config)
 
-        Generator = g.metadata.get_generator_for_language(language)
-        config = Generator.Config()
-        # TODO: more than just boolean configs
-        for option in options:
-            config.set(option, True)
-        config.validate()
+    for spec_name, apis in apis_by_spec:
+        specification = g.metadata.get_specification_for_api(spec_name)
+        feature_sets = list(select(specification, api, parse_version(version)) for api, version in apis)
 
-        generator = Generator(out_path, opener=g.opener)
-        generator.generate(specification, feature_set, config)
+        if merge and len(feature_sets) > 1:
+            feature_sets = [FeatureSet.merge(*feature_sets)]
+
+        for feature_set in feature_sets:
+            generator.generate(specification, feature_set, config)
 
     with zipfile.ZipFile(os.path.join(out_path, 'glad.zip'), mode='w') as zipf:
         write_dir_to_zipfile(out_path, zipf, exclude=['glad.zip'])

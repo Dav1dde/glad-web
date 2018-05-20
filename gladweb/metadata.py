@@ -1,7 +1,10 @@
+import itertools
+
 from collections import namedtuple
 import time
 import json
 
+from glad.config import Config, ConfigOption
 from glad.plugin import find_generators, find_specifications
 
 Language = namedtuple('Language', ['id', 'name'])
@@ -37,6 +40,14 @@ Extension = namedtuple('Extension', ['id', 'name', 'specification', 'api'])
 Option = namedtuple('Option', ['id', 'language', 'name', 'description'])
 
 
+class WebConfig(Config):
+    MERGE = ConfigOption(
+        converter=bool,
+        default=False,
+        description='Merge multiple APIs of the same specification into one file.'
+    )
+
+
 class Metadata(object):
     def __init__(self, cache, opener):
         self.cache = cache
@@ -58,15 +69,19 @@ class Metadata(object):
         else:
             self.read_metadata()
 
-    def get_specification_for_api(self, api_id):
+    def get_specification_name_for_api(self, api_id):
         for api in self.apis:
             if api.id == api_id:
-                specification = api.specification
-                break
-        else:
-            raise ValueError('Unknown API {!r}'.format(api_id))
+                return api.specification
 
-        return find_specifications()[specification].from_remote(opener=self.opener)
+        raise ValueError('Unknown API {!r}'.format(api_id))
+
+    def get_specification(self, name):
+        return find_specifications()[name].from_remote(opener=self.opener)
+
+    def get_specification_for_api(self, api_id):
+        specification = self.get_specification_name_for_api(api_id)
+        return self.get_specification(specification)
 
     def get_generator_for_language(self, language):
         try:
@@ -117,13 +132,14 @@ class Metadata(object):
                     self.extensions.append(Extension(name, name, specification.id, api))
 
         self.options = list()
+        web_config = WebConfig()
         for language in LANGUAGES:
             Generator = self.get_generator_for_language(language.id)
 
             config = Generator.Config()
 
             # TODO config options other than boolean
-            for name, option in config.items():
+            for name, option in itertools.chain(config.items(), web_config.items()):
                 self.options.append(Option(
                     name, language.id, name.lower().replace('_', ' '), option.description
                 ))
