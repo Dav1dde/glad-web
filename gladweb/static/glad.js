@@ -112,7 +112,24 @@ function show_only_specification(specification) {
 
 
 function selection_update(event) {
+    var language = $('#lang-input').val();
+    $('#specification-input').find('option').each(function (index, value) {
+        var option = $(value);
+        var supported = option.data('languages').split(',');
+        if ($.inArray(language, supported) < 0) {
+            option.attr('hidden', 'hidden');
+            option.attr('disabled', 'disabled');
+        } else {
+            option.removeAttr('hidden');
+            option.removeAttr('disabled');
+        }
+    });
+
     var specification = $('#specification-input').val();
+    if ($.inArray(language, $('#specification-input').find(':selected').data('languages').split(',')) < 0) {
+        $('#specification-input').val($('#specification-input').find('option:enabled').val());
+        return selection_update();
+    }
 
     //$('[data-api]').removeAttr('hidden').removeAttr('disabled');
     $('#extensions').find('select').multiSelect('deselect_all');
@@ -152,6 +169,7 @@ function add_extensions(extensions) {
 
 
 $(function () {
+    $('#lang-input').change(selection_update);
     $('#specification-input').change(selection_update);
     $('#api').find('select').change(selection_update);
     $('.extension-add-list').click(function() { $('#addListModal').css('visibility', 'visible'); });

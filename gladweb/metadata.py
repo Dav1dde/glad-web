@@ -6,14 +6,20 @@ from glad.spec import SPECS
 
 Language = namedtuple('Language', ['id', 'name'])
 LANGUAGES = [
-    Language('c', 'C/C++'), Language('c-debug', 'C/C++ Debug'),
-    Language('d', 'D'), Language('volt', 'Volt'), Language('nim', 'Nim')
+    Language('c', 'C/C++'),
+    Language('c-debug', 'C/C++ Debug'),
+    Language('d', 'D'),
+    Language('volt', 'Volt'),
+    Language('nim', 'Nim'),
+    Language('pascal', 'Pascal')
 ]
 
-Specification = namedtuple('Specification', ['id', 'name'])
+Specification = namedtuple('Specification', ['id', 'name', 'languages'])
 SPECIFICATIONS = [
-    Specification('gl', 'OpenGL'), Specification('egl', 'EGL'),
-    Specification('glx', 'GLX'), Specification('wgl', 'WGL')
+    Specification('gl', 'OpenGL', ['c', 'c-debug', 'd', 'volt', 'nim', 'pascal']),
+    Specification('egl', 'EGL', ['c', 'c-debug', 'd', 'volt', 'nim']),
+    Specification('glx', 'GLX', ['c', 'c-debug', 'd', 'volt', 'nim']),
+    Specification('wgl', 'WGL', ['c', 'c-debug', 'd', 'volt', 'nim'])
 ]
 
 Profile = namedtuple('Profile', ['id', 'name', 'specification'])

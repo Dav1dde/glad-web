@@ -59,7 +59,7 @@
                                 <label for="specification-input">Specification</label>
                                 <select class="u-full-width" name="specification" id="specification-input">
                                     {%  for specification in specifications -%}
-                                        <option value="{{ specification.id }}" data->{{ specification.name }}</option>
+                                        <option value="{{ specification.id }}" data-languages="{{ specification.languages|join(',') }}">{{ specification.name }}</option>
                                     {%-  endfor %}
                                 </select>
                             </div>
