@@ -1,7 +1,10 @@
-{% extends '__autoindex__/autoindex.html' %}
 {% import 'macros.html' as macros with context %}
 
-
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Glad generated files | {{ curdir.path }}</title>
 {% block meta %}
     <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
@@ -9,15 +12,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
 {% endblock %}
+</head>
 
-
+<body>
 {% block header %}
     <div class="container">
     <header class="header">
         <h3><a href="{{ url_for('index.landing') }}">Glad</a></h3><h5>Generated files. {{ "<small>These files are not permanent!</small>"|safe if root.startswith('tmp') }}</h5>
     </header>
 {% endblock %}
-
 
 {% block table %}
     <div class="aidx">
@@ -43,7 +46,6 @@
     </div>
 {% endblock %}
 
-
 {% block footer %}
     <div class="row">
         <label for="permalink">Permalink:</label>
@@ -51,3 +53,6 @@
     </div>
     </div>
 {% endblock %}
+
+</body>
+</html>
