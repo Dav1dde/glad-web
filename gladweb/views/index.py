@@ -1,15 +1,17 @@
+from itertools import groupby
+
 import os
 import tempfile
 import zipfile
 from collections import namedtuple
-from itertools import izip_longest, chain, groupby
-from urllib import urlencode
-
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
+from urllib import urlencode
 
 from glad.parse import FeatureSet
 from glad.util import parse_version
+from gladweb.exception import GladWebException, WebValueError
 from gladweb.util import write_dir_to_zipfile
+
 
 Version = namedtuple('Version', ['major', 'minor'])
 
@@ -51,10 +53,13 @@ def glad_generate():
     config.validate()
     generator = Generator(out_path, opener=g.opener)
 
-    apis_by_spec = groupby(
+    apis_by_spec = list(groupby(
         [(api, version) for api, version in apis.items() if not version.lower().strip() == 'none'],
         key=lambda api_version: g.metadata.get_specification_name_for_api(api_version[0])
-    )
+    ))
+
+    if len(apis_by_spec) == 0:
+        raise WebValueError('no API selected')
 
     def select(specification, api, version):
         profile = profiles.get(api)
@@ -62,7 +67,7 @@ def glad_generate():
         return generator.select(specification, api, version, profile, filtered_extensions, config)
 
     for spec_name, apis in apis_by_spec:
-        specification = g.metadata.get_specification_for_api(spec_name)
+        specification = g.metadata.get_specification(spec_name)
         feature_sets = list(select(specification, api, parse_version(version)) for api, version in apis)
 
         if merge and len(feature_sets) > 1:
@@ -94,6 +99,10 @@ def glad_generate():
 def generate():
     try:
         url = glad_generate()
+    except GladWebException, e:
+        current_app.logger.info('user error: %s', e)
+        flash(e.message, category='error')
+        return redirect(url_for('index.landing'))
     except Exception, e:
         current_app.logger.exception(e)
         current_app.logger.error(request.form)

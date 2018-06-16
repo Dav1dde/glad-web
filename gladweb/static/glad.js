@@ -148,8 +148,8 @@ function add_extensions(extensions) {
 
 
 $(function () {
-    $('#language').find('select').change(selection_update);
-    $('#api').find('select').change(selection_update);
+    $('#generator').find('select').change(selection_update);
+    $('#api').find('select[name=api]').change(selection_update);
     $('.extension-add-list').click(function () {
         $('#addListModal').css('visibility', 'visible');
     });
@@ -221,5 +221,5 @@ $(function () {
         $('#main-form').deserialize(window.location.hash.replace(/^#/, ''));
     }
 
-    $('#lang-input').focus();
+    $('#generator-input').focus();
 });

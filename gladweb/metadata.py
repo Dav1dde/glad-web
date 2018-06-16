@@ -6,6 +6,7 @@ import json
 
 from glad.config import Config, ConfigOption
 from glad.plugin import find_generators, find_specifications
+from gladweb.exception import WebValueError
 
 Generator = namedtuple('Language', ['id', 'name'])
 
@@ -74,7 +75,7 @@ class Metadata(object):
             if api.id == api_id:
                 return api.specification
 
-        raise ValueError('Unknown API {!r}'.format(api_id))
+        raise WebValueError('Unknown API: {}'.format(api_id))
 
     def get_specification(self, name):
         return find_specifications()[name].from_remote(opener=self.opener)
@@ -87,7 +88,7 @@ class Metadata(object):
         try:
             return find_generators()[name]
         except KeyError:
-            raise ValueError('Invalid or unknown generator name {}'.format(name))
+            raise WebValueError('Invalid or unknown generator name {}'.format(name))
 
     def read_metadata(self):
         with self.cache.open('metadata.json') as f:
