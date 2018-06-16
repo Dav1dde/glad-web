@@ -44,13 +44,13 @@
         {% endif %}
 
         <form action="generate" method="POST" id="main-form">
-            <section id="language">
+            <section id="generator">
                 <div class="row">
-                    <div class="six columns" id="language">
-                        <label for="lang-input">Language</label>
-                        <select class="u-full-width" name="language" id="lang-input">
-                            {% for language in languages -%}
-                                <option value="{{ language.id }}"> {{ language.name }}</option>
+                    <div class="six columns">
+                        <label for="lang-input">Generator</label>
+                        <select class="u-full-width" name="generator" id="generator-input">
+                            {% for generator in generators -%}
+                                <option value="{{ generator.id }}"> {{ generator.name }}</option>
                             {%-  endfor %}
                         </select>
                     </div>
@@ -110,10 +110,10 @@
                 <div class="row">
                     <label>Options</label>
                     {% for option in options|sort(attribute='name') %}
-                        <div class="row option" data-language="{{ option.language }}">
+                        <div class="row option" data-generator="{{ option.generator }}">
                             <div class="one column"></div>
                             <div class="three columns">
-                                <input type="checkbox" name="option" value="{{ option.id }}" id="option-{{ option.language }}-{{ option.id|lower|replace('_', '-') }}">
+                                <input type="checkbox" name="options" value="{{ option.id }}" id="option-{{ option.generator }}-{{ option.id|lower|replace('_', '-') }}">
                                 <span class="label-body">{{ option.name }}</span>
                             </div>
                             <div class="eight columns">

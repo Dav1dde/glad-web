@@ -7,11 +7,11 @@ import json
 from glad.config import Config, ConfigOption
 from glad.plugin import find_generators, find_specifications
 
-Language = namedtuple('Language', ['id', 'name'])
+Generator = namedtuple('Language', ['id', 'name'])
 
-LANGUAGES = list()
-for language, generator in find_generators().items():
-    LANGUAGES.append(Language(language, generator.DISPLAY_NAME or language))
+GENERATORS = list()
+for name, generator in find_generators().items():
+    GENERATORS.append(Generator(name, generator.DISPLAY_NAME or name))
 
 Specification = namedtuple('Specification', ['id', 'name'])
 SPECIFICATIONS = [Specification(name, s.DISPLAY_NAME) for name, s in find_specifications().items()]
@@ -37,7 +37,7 @@ Extension = namedtuple('Extension', ['id', 'name', 'specification', 'api'])
 #      Extension('GLX_EXT_TEST', 'GLX_EXT_TEST', 'glx', 'glx')
 #  ]
 
-Option = namedtuple('Option', ['id', 'language', 'name', 'description'])
+Option = namedtuple('Option', ['id', 'generator', 'name', 'description'])
 
 
 class WebConfig(Config):
@@ -53,7 +53,7 @@ class Metadata(object):
         self.cache = cache
         self.opener = opener
 
-        self.languages = LANGUAGES[:]
+        self.generators = GENERATORS[:]
         self.specifications = SPECIFICATIONS[:]
         self.profiles = list()
 
@@ -83,17 +83,17 @@ class Metadata(object):
         specification = self.get_specification_name_for_api(api_id)
         return self.get_specification(specification)
 
-    def get_generator_for_language(self, language):
+    def get_generator_for_name(self, name):
         try:
-            return find_generators()[language]
+            return find_generators()[name]
         except KeyError:
-            raise ValueError('Invalid or Unknown language {}'.format(language))
+            raise ValueError('Invalid or unknown generator name {}'.format(name))
 
     def read_metadata(self):
         with self.cache.open('metadata.json') as f:
             data = json.load(f)
 
-        self.languages = [Language(*lang) for lang in data['languages']]
+        self.generators = [Generator(*lang) for lang in data['generators']]
         self.specifications = [Specification(*spec) for spec in data['specifications']]
         self.profiles = [Profile(*profile) for profile in data['profiles']]
         self.apis = list()
@@ -133,15 +133,15 @@ class Metadata(object):
 
         self.options = list()
         web_config = WebConfig()
-        for language in LANGUAGES:
-            Generator = self.get_generator_for_language(language.id)
+        for generator in GENERATORS:
+            Generator = self.get_generator_for_name(generator.id)
 
             config = Generator.Config()
 
             # TODO config options other than boolean
             for name, option in itertools.chain(config.items(), web_config.items()):
                 self.options.append(Option(
-                    name, language.id, name.lower().replace('_', ' '), option.description
+                    name, generator.id, name.lower().replace('_', ' '), option.description
                 ))
 
         self.created = time.time()
@@ -151,7 +151,7 @@ class Metadata(object):
 
     def as_dict(self):
         return {
-            'languages': self.languages,
+            'generators': self.generators,
             'specifications': self.specifications,
             'profiles': self.profiles,
             'apis': self.apis,

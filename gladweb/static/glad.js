@@ -11,12 +11,11 @@ function any_contains(a, b) {
     return false;
 }
 
-String.prototype.endsWith = function(suffix) {
+String.prototype.endsWith = function (suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
 
-$.fn.deserialize = function (serializedString)
-{
+$.fn.deserialize = function (serializedString) {
     // modified version of:
     // http://stackoverflow.com/questions/9856587/is-there-an-inverse-function-to-jquery-serialize
     // modified in a way it will only work for this site
@@ -28,10 +27,10 @@ $.fn.deserialize = function (serializedString)
     var data = {};
 
     // Loop over all name-value pairs
-    $.each(formFieldArray, function(i, pair) {
+    $.each(formFieldArray, function (i, pair) {
         var nameValue = pair.split("=");
         var name = decodeURIComponent(nameValue[0]).toLowerCase(); // (C)
-        var value = decodeURIComponent(nameValue[1]);
+        var value = decodeURIComponent(nameValue[1]).split(',');
 
         if (data.hasOwnProperty(name)) {
             data[name] = [].concat(data[name], value);
@@ -46,19 +45,25 @@ $.fn.deserialize = function (serializedString)
     if (!$.isArray(data['api'])) {
         data['api'] = [data['api']];
     }
-    $.each(data['api'], function(i, apistr) {
+    $.each(data['api'], function (i, apistr) {
         var tmp = apistr.split('=', 2);
-        var api = tmp[0];
-        var ver = tmp[1];
+        var tmp2 = tmp[0].split(':');
+        var version = tmp[1];
+        var api = tmp2[0];
+        var profile = tmp2[1];
 
-        $form.find('select[name=api][data-api=' + api + ']').val(apistr);
+        $form.find('select[name=api][data-api=' + api + ']').val(api + '=' + version);
+
+        if (profile) {
+            $form.find('select[name=profile][data-api=' + api + ']').val(api + '=' + profile);
+        }
     });
     selection_update();
 
     /* set language */
-    $form.find('select[name=language]').val(data['language']);
+    $form.find('select[name=generator]').val(data['generator'][0]);
 
-    $.each(data['profile'], function(i, profilestr) {
+    $.each((data['profile'] || []), function (i, profilestr) {
         var tmp = profilestr.split('=', 2);
         var api = tmp[0];
         var profile = tmp[1];
@@ -67,13 +72,13 @@ $.fn.deserialize = function (serializedString)
     });
 
     /* set extensions */
-    $.each([].concat((data['extensions'] || [])), function(i, ext) {
+    $.each([].concat((data['extensions'] || [])), function (i, ext) {
         $form.find('select[name=extensions]').multiSelect('select', ext);
     });
 
     /* set options */
-    $.each(data['option'], function(i, option) {
-        $form.find('input[name=option][value=' + option + ']').attr('checked', true);
+    $.each((data['options'] || []), function (i, option) {
+        $form.find('input[name=options][value=' + option + ']').attr('checked', true);
     });
 
     return this;
@@ -117,9 +122,9 @@ function selection_update(event) {
     });
 
     // Show only relevant options
-    var language = $('#language').find('select').val();
-    $('#options').find('.option[data-language]').attr('hidden', 'hidden');
-    $('#options').find('.option[data-language=' + language + ']').removeAttr('hidden');
+    var generator = $('#generator').find('select').val();
+    $('#options').find('.option[data-generator]').attr('hidden', 'hidden');
+    $('#options').find('.option[data-generator=' + generator + ']').removeAttr('hidden');
     if ($('#options').find('.option:not([hidden])').length == 0) {
         // Hide the options section if there are no available options
         $('#options').attr('hidden', 'hidden');
@@ -145,19 +150,31 @@ function add_extensions(extensions) {
 $(function () {
     $('#language').find('select').change(selection_update);
     $('#api').find('select').change(selection_update);
-    $('.extension-add-list').click(function() { $('#addListModal').css('visibility', 'visible'); });
-    $('.extension-addlist-add').click(function() {
+    $('.extension-add-list').click(function () {
+        $('#addListModal').css('visibility', 'visible');
+    });
+    $('.extension-addlist-add').click(function () {
         add_extensions($('#addListModal textarea').val());
         $('#addListModal textarea').val('');
         $('#addListModal').css('visibility', 'hidden');
     });
-    $('.extension-addlist-close').click(function() { $('#addListModal').css('visibility', 'hidden'); });
-    $('.extensions-add-all').click(function() { $('#extensions').find('select').multiSelect('select', $('#extensions .ms-selectable li:visible').toArray().map($.text)); });
-    $('.extensions-remove-all').click(function() { $('#extensions').find('select').multiSelect('deselect', $('#extensions .ms-selection li:visible').toArray().map($.text)); });
+    $('.extension-addlist-close').click(function () {
+        $('#addListModal').css('visibility', 'hidden');
+    });
+    $('.extensions-add-all').click(function () {
+        $('#extensions').find('select').multiSelect('select', $('#extensions .ms-selectable li:visible').toArray().map($.text));
+    });
+    $('.extensions-remove-all').click(function () {
+        $('#extensions').find('select').multiSelect('deselect', $('#extensions .ms-selection li:visible').toArray().map($.text));
+    });
 
     var qs_options = {
-        'prepareQuery': function (val) { return new RegExp(val, "i"); },
-        'testQuery': function (query, txt, _row) { return query.test(txt); }
+        'prepareQuery': function (val) {
+            return new RegExp(val, "i");
+        },
+        'testQuery': function (query, txt, _row) {
+            return query.test(txt);
+        }
     };
 
     $('#extensions').find('select').multiSelect({
@@ -171,7 +188,7 @@ $(function () {
                 selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
 
             that.qs1 = $selectableSearch
-                .quicksearch(selectableSearchString,  qs_options)
+                .quicksearch(selectableSearchString, qs_options)
                 .on('keydown', function (e) {
                     if (e.which === 40) {
                         that.$selectableUl.focus();

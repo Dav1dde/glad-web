@@ -28,9 +28,9 @@ def glad_generate():
     # Form data
     apis = dict(api.split('=') for api in request.form.getlist('api'))
     profiles = dict(p.split('=') for p in request.form.getlist('profile'))
-    language = request.form.get('language')
+    generator = request.form.get('generator')
     extensions = request.form.getlist('extensions')
-    options = set(request.form.getlist('option'))
+    options = set(request.form.getlist('options'))
 
     # Other
     # the suffix is required because mkdtemp sometimes creates directories with an
@@ -43,7 +43,7 @@ def glad_generate():
     if merge:
         options.remove('MERGE')
 
-    Generator = g.metadata.get_generator_for_language(language)
+    Generator = g.metadata.get_generator_for_name(generator)
     config = Generator.Config()
     # TODO: more than just boolean configs
     for option in options:
@@ -74,9 +74,11 @@ def glad_generate():
     with zipfile.ZipFile(os.path.join(out_path, 'glad.zip'), mode='w') as zipf:
         write_dir_to_zipfile(out_path, zipf, exclude=['glad.zip'])
 
-    serialized = urlencode(list(chain.from_iterable(
-        izip_longest('', x[1], fillvalue=x[0]) for x in request.form.lists())
-    ))
+    # TODO replace 'none' check with proper comparison for default value
+    params = [(name, ','.join(option for option in options if not 'none' in option))
+              for name, options in request.form.lists()]
+    serialized = urlencode(params)
+
     # Poor mans database
     serialized_path = os.path.join(out_path, '.serialized')
     with open(serialized_path, 'w') as fobj:
