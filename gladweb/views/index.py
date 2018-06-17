@@ -1,5 +1,6 @@
 from itertools import groupby
 
+import json
 import os
 import tempfile
 import zipfile
@@ -8,10 +9,10 @@ from flask import Blueprint, request, render_template, g, url_for, redirect, fla
 from urllib import urlencode
 
 from glad.parse import FeatureSet
+from glad.sink import CollectingSink
 from glad.util import parse_version
 from gladweb.exception import GladWebException, WebValueError
 from gladweb.util import write_dir_to_zipfile
-
 
 Version = namedtuple('Version', ['major', 'minor'])
 
@@ -41,6 +42,8 @@ def glad_generate():
     out_path = tempfile.mkdtemp(dir=current_app.config['TEMP'], suffix='glad')
     os.chmod(out_path, 0o750)
 
+    sink = CollectingSink()
+
     merge = 'MERGE' in options
     if merge:
         options.remove('MERGE')
@@ -53,10 +56,16 @@ def glad_generate():
     config.validate()
     generator = Generator(out_path, opener=g.opener)
 
-    apis_by_spec = list(groupby(
-        [(api, version) for api, version in apis.items() if not version.lower().strip() == 'none'],
-        key=lambda api_version: g.metadata.get_specification_name_for_api(api_version[0])
-    ))
+    apis_by_spec = dict()
+    for api, version in apis.items():
+        if not version.lower().strip() == 'none':
+            spec = g.metadata.get_specification_name_for_api(api)
+            apis_by_spec.setdefault(spec, []).append((api, version))
+
+    #list(groupby(
+    #    [(api, version) for api, version in apis.items() if not version.lower().strip() == 'none'],
+    #    key=lambda api_version: g.metadata.get_specification_name_for_api(api_version[0])
+    #))
 
     if len(apis_by_spec) == 0:
         raise WebValueError('no API selected')
@@ -64,17 +73,17 @@ def glad_generate():
     def select(specification, api, version):
         profile = profiles.get(api)
         filtered_extensions = [ext for ext in extensions if specification.is_extension(api, ext)]
-        return generator.select(specification, api, version, profile, filtered_extensions, config)
+        return generator.select(specification, api, version, profile, filtered_extensions, config, sink=sink)
 
-    for spec_name, apis in apis_by_spec:
+    for spec_name, apis in apis_by_spec.items():
         specification = g.metadata.get_specification(spec_name)
         feature_sets = list(select(specification, api, parse_version(version)) for api, version in apis)
 
         if merge and len(feature_sets) > 1:
-            feature_sets = [FeatureSet.merge(*feature_sets)]
+            feature_sets = [FeatureSet.merge(feature_sets, sink=sink)]
 
         for feature_set in feature_sets:
-            generator.generate(specification, feature_set, config)
+            generator.generate(specification, feature_set, config, sink=sink)
 
     with zipfile.ZipFile(os.path.join(out_path, 'glad.zip'), mode='w') as zipf:
         write_dir_to_zipfile(out_path, zipf, exclude=['glad.zip'])
@@ -85,9 +94,12 @@ def glad_generate():
     serialized = urlencode(params)
 
     # Poor mans database
-    serialized_path = os.path.join(out_path, '.serialized')
-    with open(serialized_path, 'w') as fobj:
-        fobj.write(serialized)
+    data_path = os.path.join(out_path, '.data')
+    with open(data_path, 'w') as fobj:
+        json.dump({
+            'serialized': serialized,
+            'messages': [m.content for m in sink.messages]
+        }, fobj)
 
     name = os.path.split(out_path)[1]
     if current_app.config['FREEZE']:

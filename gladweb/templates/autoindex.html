@@ -3,22 +3,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Glad generated files | {{ curdir.path }}</title>
-{% block meta %}
-    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='multi-select.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
-{% endblock %}
+    {% block meta %}
+        <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='multi-select.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='skeleton.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='glad.css') }}">
+    {% endblock %}
 </head>
 
 <body>
+<div class="container">
 {% block header %}
-    <div class="container">
     <header class="header">
-        <h3><a href="{{ url_for('index.landing') }}">Glad</a></h3><h5>Generated files. {{ "<small>These files are not permanent!</small>"|safe if root.startswith('tmp') }}</h5>
+        <h3><a href="{{ url_for('index.landing') }}">Glad</a></h3><h5>Generated
+        files. {{ "<small>These files are not permanent!</small>"|safe if root.startswith('tmp') }}</h5>
     </header>
 {% endblock %}
 
@@ -46,13 +47,26 @@
     </div>
 {% endblock %}
 
-{% block footer %}
+{% block permalink %}
     <div class="row">
         <label for="permalink">Permalink:</label>
-        <input id="permalink" class="u-full-width" type="text" value="{{ url_for('index.landing', _external=True) }}#{{ g.serialized }}" readonly>
-    </div>
+        <input id="permalink" class="u-full-width" type="text"
+               value="{{ url_for('index.landing', _external=True) }}#{{ g.data.serialized }}" readonly>
     </div>
 {% endblock %}
 
+{% block content %}
+    <div class="row messages">
+    <label>Messages:</label>
+    {% if g.data.messages %}
+        <ul>
+        {% for message in g.data.messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    </div>
+{% endblock %}
+</div>
 </body>
 </html>

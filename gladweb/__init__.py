@@ -1,3 +1,4 @@
+import json
 from flask import Flask, g
 from flask.ext.autoindex import AutoIndexBlueprint
 import werkzeug
@@ -84,10 +85,10 @@ def create_application(debug=False, verbose=False):
     def autoindex(root, path='.'):
         root = werkzeug.utils.secure_filename(root)
         browse_root = os.path.join(app.config['TEMP'], root)
-        serialized_path = os.path.join(browse_root, '.serialized')
-        if os.path.exists(serialized_path):
-            with open(serialized_path) as fobj:
-                g.serialized = fobj.read().strip()
+        data_path = os.path.join(browse_root, '.data')
+        if os.path.exists(data_path):
+            with open(data_path) as fobj:
+                g.data = json.load(fobj)
         return idx.render_autoindex(
             path,
             browse_root=browse_root,

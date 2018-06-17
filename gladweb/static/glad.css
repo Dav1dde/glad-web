@@ -174,3 +174,12 @@ td.size {
 .size {
     width: 60px;
 }
+
+.messages ul {
+    list-style: none;
+    margin-left: 25px;
+}
+
+.messages li {
+    margin: 0;
+}
