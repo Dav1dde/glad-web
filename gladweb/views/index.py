@@ -92,6 +92,7 @@ def glad_generate():
 
     loader = loader_cls(apis)
     loader.disabled = not loader_enabled
+    loader.local_files = local_files
 
     glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
 
