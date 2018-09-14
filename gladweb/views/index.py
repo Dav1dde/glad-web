@@ -1,13 +1,16 @@
-from collections import namedtuple
+from itertools import izip_longest, chain
+
+import json
 import os
 import tempfile
 import zipfile
-import json
-from itertools import izip_longest, chain
+from collections import namedtuple
+from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
 from urllib import urlencode
-from flask import Blueprint, request, render_template, g, url_for, redirect, flash, send_file, current_app
+
 import glad.lang.c.generator
 from glad.spec import SPECS
+from gladweb.views.exception import InvalidUserInput
 
 
 Version = namedtuple('Version', ['major', 'minor'])
@@ -36,13 +39,13 @@ def validate_form():
     messages = list()
 
     if language not in (l.id for l in g.metadata.languages):
-        raise ValueError('Invalid language "{0}"'.format(language))
+        raise InvalidUserInput('Invalid language "{0}"'.format(language))
 
     if specification not in (s.id for s in g.metadata.specifications):
-        raise ValueError('Invalid specification "{0}"'.format(specification))
+        raise InvalidUserInput('Invalid specification "{0}"'.format(specification))
 
     if profile not in (p.id for p in g.metadata.profiles):
-        raise ValueError('Invalid profile "{0}"'.format(profile))
+        raise InvalidUserInput('Invalid profile "{0}"'.format(profile))
 
     apis_parsed = dict()
     for api in apis:
@@ -52,7 +55,7 @@ def validate_form():
         apis_parsed[name] = Version(*map(int, version.split('.')))
 
     if len(apis_parsed) == 0:
-        raise ValueError(
+        raise InvalidUserInput(
             'No API for specification selected'.format(specification)
         )
 
@@ -88,7 +91,7 @@ def glad_generate():
     )
 
     if loader_cls is None:
-        raise ValueError('API/Spec not yet supported')
+        raise InvalidUserInput('API/Spec not yet supported')
 
     loader = loader_cls(apis)
     loader.disabled = not loader_enabled
@@ -128,6 +131,10 @@ def generate():
     try:
         url = glad_generate()
     except Exception, e:
+        import gladweb
+        if gladweb.sentry is not None:
+            gladweb.sentry.captureException()
+
         current_app.logger.exception(e)
         current_app.logger.error(request.form)
         flash(e.message, category='error')
