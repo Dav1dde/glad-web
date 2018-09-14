@@ -66,5 +66,5 @@ class CachingOpener(URLOpener):
         if not self.cache.exists(key):
             self.cache.register(key, lambda: URLOpener.urlopen(self, url, data))
 
-        url = 'file://' + self.cache.get_path(key)
+        url = 'file:' + self.cache.get_path(key)
         return URLOpener.urlretrieve(self, url, filename, data)
