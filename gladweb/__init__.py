@@ -10,6 +10,12 @@ import logging
 import sys
 import os
 
+try:
+    from raven.contrib.flask import Sentry
+    sentry = Sentry()
+except ImportError:
+    sentry = None
+
 
 class LevelFilter(logging.Filter):
     def __init__(self, levels):
@@ -67,6 +73,9 @@ def create_application(debug=False, verbose=False):
 
     if verbose or (not app.debug and verbose is None):
         setup_logging()
+
+    if sentry is not None:
+        sentry.init_app(app)
 
     @app.before_request
     def before_request():

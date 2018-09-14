@@ -5,3 +5,7 @@ class GladWebException(Exception):
 
 class WebValueError(GladWebException):
     pass
+
+
+class InvalidUserInput(GladWebException):
+    pass

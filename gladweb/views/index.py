@@ -1,5 +1,3 @@
-from itertools import groupby
-
 import json
 import os
 import tempfile
@@ -11,7 +9,7 @@ from urllib import urlencode
 from glad.parse import FeatureSet
 from glad.sink import CollectingSink
 from glad.util import parse_version
-from gladweb.exception import GladWebException, WebValueError
+from gladweb.exception import GladWebException, InvalidUserInput
 from gladweb.util import write_dir_to_zipfile
 
 Version = namedtuple('Version', ['major', 'minor'])
@@ -68,7 +66,7 @@ def glad_generate():
     #))
 
     if len(apis_by_spec) == 0:
-        raise WebValueError('no API selected')
+        raise InvalidUserInput('no API selected')
 
     def select(specification, api, version):
         profile = profiles.get(api)
@@ -111,13 +109,16 @@ def glad_generate():
 def generate():
     try:
         url = glad_generate()
-    except GladWebException, e:
-        current_app.logger.info('user error: %s', e)
-        flash(e.message, category='error')
-        return redirect(url_for('index.landing'))
     except Exception, e:
-        current_app.logger.exception(e)
-        current_app.logger.error(request.form)
+        import gladweb
+        if gladweb.sentry is not None:
+            gladweb.sentry.captureException()
+
+        if isinstance(e, GladWebException):
+            current_app.logger.info('user error: %s', e)
+        else:
+            current_app.logger.exception(e)
+
         flash(e.message, category='error')
         return redirect(url_for('index.landing'))
 
