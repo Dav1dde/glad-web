@@ -7,6 +7,7 @@ from contextlib import closing
 from glad.opener import URLOpener
 from gladweb.util import remove_file_or_dir
 
+
 class FileCache(object):
     def __init__(self, path):
         self.path = os.path.abspath(path)
@@ -18,8 +19,7 @@ class FileCache(object):
 
         with closing(gen_func()) as src:
             with self.open(name, 'wb') as dst:
-                # TODO very memory inefficient
-                dst.write(src.read())
+                shutil.copyfileobj(src, dst)
 
     def clear(self):
         for name in os.listdir(self.path):
