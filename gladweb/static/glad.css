@@ -44,6 +44,14 @@ section {
     text-align: right;
 }
 
+#options input {
+    margin: 0;
+}
+#options .columns .row {
+    margin-bottom: 10px;
+    margin-left: 3%;
+}
+
 #submit {
     text-align: right;
 }
