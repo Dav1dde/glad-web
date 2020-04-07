@@ -1,20 +1,28 @@
 import json
-from flask import Flask, g
-from flask.ext.autoindex import AutoIndexBlueprint
+import logging
+import os
+import shutil
+import sys
+import threading
+import time
+
 import werkzeug
+from flask import Flask, g
+from flask_autoindex import AutoIndexBlueprint
+
 import glad
+import gladweb.util
 from gladweb.freezer import Freezer
 from gladweb.metadata import Metadata
-import gladweb.util
-import logging
-import sys
-import os
 
 try:
     from raven.contrib.flask import Sentry
     sentry = Sentry()
 except ImportError:
     sentry = None
+
+
+logger = logging.getLogger('gladweb')
 
 
 class LevelFilter(logging.Filter):
@@ -48,7 +56,43 @@ def setup_logging():
     stderr.setFormatter(fmtr)
     root_logger.addHandler(stderr)
 
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.INFO)
+
+
+class RefreshCron(threading.Thread):
+    def __init__(self, interval, app):
+        threading.Thread.__init__(self, name='refresh-cron')
+        self.setDaemon(True)
+
+        self._stopped = threading.Event()
+
+        self.interval = interval
+        self.app = app
+
+    def run(self):
+        while not self._stopped.wait(self.interval):
+            try:
+                self._do_refresh()
+            except Exception as e:
+                logger.error('refresh cron failed', e)
+
+    def _do_refresh(self):
+        self.app.config['CACHE'].clear()
+        self.app.config['METADATA'].refresh_metadata()
+
+        deletions = 0
+        temp = self.app.config['TEMP']
+        for name in os.listdir(temp):
+            path = os.path.join(temp, name)
+            age = time.time() - os.stat(path).st_mtime
+            if age > self.interval:
+                if os.path.isfile(path) or os.path.islink(path):
+                    os.remove(path)
+                else:
+                    shutil.rmtree(path)
+                deletions = deletions + 1
+
+        logger.info('cleared cache, refreshed metadata and deleted %s expired temporary files', deletions)
 
 
 def create_application(debug=False, verbose=False):
@@ -75,7 +119,11 @@ def create_application(debug=False, verbose=False):
         setup_logging()
 
     if sentry is not None:
-        sentry.init_app(app)
+        sentry.init_app(app, logging=True, level=logging.WARN)
+
+    if app.config['CRON'] > 0:
+        cron = RefreshCron(app.config['CRON'], app)
+        cron.start()
 
     @app.before_request
     def before_request():
@@ -87,7 +135,10 @@ def create_application(debug=False, verbose=False):
     app.register_blueprint(index)
 
     from gladweb.views.generated import generated
-    idx = AutoIndexBlueprint(generated, browse_root=app.config['TEMP'], add_url_rules=False, silk_options={'silk_path': '/icons'})
+    idx = AutoIndexBlueprint(generated,
+                             browse_root=app.config['TEMP'],
+                             add_url_rules=False,
+                             silk_options={'silk_path': '/icons'})
 
     @generated.route('/<root>/')
     @generated.route('/<root>/<path:path>')

@@ -36,6 +36,11 @@ TEMP = os.path.join(base_path, 'temp')
 # Note: /generated/icons still needs to be served by glad-web
 FREEZE = True
 
+# Automatic cron/cleanup timer in seconds, defaults to 23 hours.
+# Disable cron by setting it to 0.
+CRON = 23 * 60 * 60
+
+
 try:
     from local_config import *
 except ImportError:

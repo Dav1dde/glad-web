@@ -1,12 +1,14 @@
 import itertools
-
-from collections import namedtuple
-import time
 import json
+import logging
+import time
+from collections import namedtuple
 
 from glad.config import Config, ConfigOption
 from glad.plugin import find_generators, find_specifications
 from gladweb.exception import WebValueError
+
+logger = logging.getLogger(__name__)
 
 Generator = namedtuple('Language', ['id', 'name'])
 
@@ -106,6 +108,8 @@ class Metadata(object):
         self.created = data['created']
 
     def refresh_metadata(self):
+        logger.info('refreshing metadata')
+
         self.apis = list()
         self.profiles = list()
         self.extensions = list()
@@ -149,6 +153,8 @@ class Metadata(object):
 
         with self.cache.open('metadata.json', 'w') as f:
             json.dump(self.as_dict(), f)
+
+        logger.info('successfully refreshed metadata')
 
     def as_dict(self):
         return {

@@ -4,13 +4,18 @@ import tempfile
 import zipfile
 from collections import namedtuple
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
-from urllib import urlencode
 
 from glad.parse import FeatureSet
 from glad.sink import CollectingSink
 from glad.util import parse_version
 from gladweb.exception import GladWebException, InvalidUserInput
 from gladweb.util import write_dir_to_zipfile
+
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
+
 
 Version = namedtuple('Version', ['major', 'minor'])
 
@@ -109,7 +114,7 @@ def glad_generate():
 def generate():
     try:
         url = glad_generate()
-    except Exception, e:
+    except Exception as e:
         import gladweb
         if gladweb.sentry is not None:
             gladweb.sentry.captureException()
@@ -119,7 +124,7 @@ def generate():
         else:
             current_app.logger.exception(e)
 
-        flash(e.message, category='error')
+        flash(getattr(e, 'message', str(e)), category='error')
         return redirect(url_for('index.landing'))
 
     return redirect(url)
