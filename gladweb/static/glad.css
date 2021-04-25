@@ -60,6 +60,12 @@ footer {
     border-top: 1px solid grey;
     font-size: 80%;
     text-transform: uppercase;
+    margin-top: 35px;
+}
+
+.powered-by {
+    margin: 20px 0;
+    text-align: right;
 }
 
 /* Modal */
