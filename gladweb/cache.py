@@ -53,12 +53,12 @@ class FileCache(object):
             # we download, if this fails it is fine, if it succeeds we overwrite
             with closing(self.opener.urlopen(base_url + filename)) as src:
                 data = src.read()
-                with self.open(filename, 'w') as dst:
+                with self.open(filename, 'wb') as dst:
                     dst.write(data)
 
         with closing(self.opener.urlopen(KHRPLATFORM_URL)) as src:
             data = src.read()
-            with self.open('khrplatform.h', 'w') as dst:
+            with self.open('khrplatform.h', 'wb') as dst:
                 dst.write(data)
 
     def get_path(self, filename):

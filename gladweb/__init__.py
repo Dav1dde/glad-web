@@ -1,5 +1,5 @@
 from flask import Flask, g
-from flask.ext.autoindex import AutoIndexBlueprint
+from flask_autoindex import AutoIndexBlueprint
 import werkzeug
 import glad
 from gladweb.freezer import Freezer

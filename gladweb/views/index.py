@@ -1,17 +1,21 @@
-from itertools import izip_longest, chain
-
 import json
 import os
+import sys
 import tempfile
 import zipfile
 from collections import namedtuple
 from flask import Blueprint, request, render_template, g, url_for, redirect, flash, current_app
-from urllib import urlencode
 
 import glad.lang.c.generator
 from glad.spec import SPECS
 from gladweb.views.exception import InvalidUserInput
 
+if sys.version_info >= (3, 0):
+    from itertools import zip_longest, chain
+    from urllib.parse import urlencode
+else:
+    from itertools import izip_longest as zip_longest, chain
+    from urllib import urlencode
 
 Version = namedtuple('Version', ['major', 'minor'])
 
@@ -97,7 +101,7 @@ def glad_generate():
     loader.disabled = not loader_enabled
     loader.local_files = local_files
 
-    glad.lang.c.generator.KHRPLATFORM = g.cache.get_khrplatform()
+    glad.lang.c.generator.KHRPLATFORM = 'file:' + g.cache.get_khrplatform()
 
     # the suffix is required because mkdtemp sometimes creates directories with an
     # underscore at the end, we later use werkzeug.utils.secure_filename on that directory,
@@ -108,13 +112,13 @@ def glad_generate():
         generator.generate()
 
     zip_path = os.path.join(directory, 'glad.zip')
-    with open(zip_path, 'w') as fobj:
+    with open(zip_path, 'wb') as fobj:
         zipf = zipfile.ZipFile(fobj, mode='w')
         write_dir_to_zipfile(directory, zipf, exclude=['glad.zip'])
         zipf.close()
 
     serialized = urlencode(list(chain.from_iterable(
-        izip_longest('', x[1], fillvalue=x[0]) for x in request.form.lists())
+        zip_longest('', x[1], fillvalue=x[0]) for x in request.form.lists())
     ))
     serialized_path = os.path.join(directory, '.serialized')
     with open(serialized_path, 'w') as fobj:
@@ -130,14 +134,14 @@ def glad_generate():
 def generate():
     try:
         url = glad_generate()
-    except Exception, e:
+    except Exception as e:
         import gladweb
         if gladweb.sentry is not None:
             gladweb.sentry.captureException()
 
         current_app.logger.exception(e)
         current_app.logger.error(request.form)
-        flash(e.message, category='error')
+        flash(str(e), category='error')
         return redirect(url_for('index.landing'))
 
     return redirect(url)
