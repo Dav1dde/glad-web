@@ -9,25 +9,11 @@ Official instance running at: http://glad.dav1d.de/
 
 ### Requirements: ###
 
-    Flask==0.10.1
-    Flask-Silk==0.2
-    Jinja2==2.7.3
-    MarkupSafe==0.23
-    Werkzeug==0.10.4
-    argparse==1.2.1
-    eventlet==0.17.4
-    future==0.15.0
-    gevent==1.0.2
-    greenlet==0.4.7
-    gunicorn==19.3.0
-    itsdangerous==0.24
-    lxml==3.4.4
-    wsgiref==0.1.2
-
-Furthermore [Flask-Autoindex](https://github.com/sublee/flask-autoindex) is also required.
-I am using the git version at commit: `bd5daee43353e77cb89d967bffa1a3786e5182ad`. The PyPi version does *not* work. 
-
-And obviously [glad](https://github.com/Dav1dde/glad) needs to be installed as well!
+    glad
+    gunicorn
+    eventlet
+    flask
+    Flask-AutoIndex
 
 ### Cronjob: ###
 
@@ -35,14 +21,12 @@ To delete all temporary files, I recommend running a cronjob every 24 hours:
 
 ```sh
 #!/bin/sh
-    
+
 cd /home/pyweb/gladweb/glad-web/
 source ../bin/activate
-    
+
 exec python -m gladweb cron --age 23
 ```
-
-
 ### Gunicorn: ###
 
 Start script:
@@ -56,7 +40,7 @@ source ../bin/activate
 
 exec gunicorn -c gunicorn.config.py 'gladweb:create_application(debug=False, verbose=None)' "$@"
 ```
-     
+
 Config:
 
 ```python
@@ -105,14 +89,14 @@ server {
     location /static {
         alias /path/to/glad-web/gladweb/static;
     }
-    
-    # 'frozen' html files 
+
+    # 'frozen' html files
     location /generated {
         default_type text/plain;
         alias /path/to/glad-web/temp;
     }
-   
-    # served by flask-silk 
+
+    # served by flask-silk
     location /generated/icons {
         try_files $uri @proxy_to_app;
     }
