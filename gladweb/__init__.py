@@ -11,6 +11,11 @@ import sys
 import os
 
 try:
+    from werkzeug.contrib.fixers import ProxyFix
+except ImportError:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
+try:
     from raven.contrib.flask import Sentry
     sentry = Sentry()
 except ImportError:
@@ -64,6 +69,8 @@ def create_application(debug=False, verbose=False):
 
     app = Flask(__name__)
     app.config.from_object('gladweb.config')
+    if app.config.get('WITH_PROXY_FIX'):
+        app.wsgi_app = ProxyFix(app.wsgi_app)
     app.debug = debug
     app.freezer = Freezer(app)
 
