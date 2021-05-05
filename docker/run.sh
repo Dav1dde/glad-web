@@ -4,7 +4,7 @@ if [[ -n "$SERVER_NAME" ]]; then
     echo "SERVER_NAME = '$SERVER_NAME'" > local_config.py
 fi
 
-if [[ -n "GLAD_LATEST" ]]; then
+if [[ -n "$GLAD_LATEST" ]]; then
   pip install --upgrade git+https://github.com/dav1dde/glad.git#egg=glad
 fi
 
