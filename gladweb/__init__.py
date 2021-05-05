@@ -16,6 +16,11 @@ from gladweb.freezer import Freezer
 from gladweb.metadata import Metadata
 
 try:
+    from werkzeug.contrib.fixers import ProxyFix
+except ImportError:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
+try:
     from raven.contrib.flask import Sentry
     sentry = Sentry()
 except ImportError:
@@ -109,6 +114,8 @@ def create_application(debug=False, verbose=False):
 
     app = Flask(__name__)
     app.config.from_object('gladweb.config')
+    if app.config.get('WITH_PROXY_FIX'):
+        app.wsgi_app = ProxyFix(app.wsgi_app)
     app.debug = debug
     app.freezer = Freezer(app)
 
@@ -118,7 +125,7 @@ def create_application(debug=False, verbose=False):
     if verbose or (not app.debug and verbose is None):
         setup_logging()
 
-    if sentry is not None:
+    if sentry is not None and app.config.get('SENTRY_CONFIG'):
         sentry.init_app(app, logging=True, level=logging.WARN)
 
     if app.config['CRON'] > 0:

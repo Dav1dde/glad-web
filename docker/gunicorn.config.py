@@ -1,7 +1,6 @@
 bind = '0.0.0.0:8080'
-workers = 5
+workers = 3
 worker_class = 'gevent'
-keepalive = 10
-errorlog = '-'
-loglevel = 'warning'
+keepalive = 15
+loglevel = 'info'
 proc_name = 'glad-web'
