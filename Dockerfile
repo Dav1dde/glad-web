@@ -6,7 +6,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /usr/src/app
 
-RUN pip install --no-cache-dir glad gunicorn eventlet flask Flask-AutoIndex raven[flask] lxml
+RUN pip install --no-cache-dir glad gunicorn==20.1.0 eventlet==0.30.2 flask Flask-AutoIndex raven[flask] lxml
 
 COPY docker/* ./
 COPY gladweb gladweb
