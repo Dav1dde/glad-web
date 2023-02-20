@@ -5,7 +5,7 @@ if [[ -n "$SERVER_NAME" ]]; then
 fi
 
 if [[ -n "$GLAD_LATEST" ]]; then
-  pip install --upgrade --force-reinstall git+https://github.com/dav1dde/glad.git#egg=glad
+  pip install --upgrade --force-reinstall git+https://github.com/dav1dde/glad.git@master
 fi
 
 python -m gladweb init
