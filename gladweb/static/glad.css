@@ -55,11 +55,6 @@ footer {
     margin-top: 35px;
 }
 
-.powered-by {
-    margin: 20px 0;
-    text-align: right;
-}
-
 /* Modal */
 .modal-dialog {
     visibility: hidden;
