@@ -9,7 +9,7 @@ if [[ -n "${SENTRY_DSN}" ]]; then
 fi
 
 if [[ -n "${GLAD_LATEST}" ]]; then
-    pip install --upgrade --force-reinstall https://github.com/dav1dde/glad/archive/glad2.zip
+    pip install --upgrade --force-reinstall --use-pep517 https://github.com/dav1dde/glad/archive/glad2.zip
 fi
 
 python -m gladweb init
