@@ -5,10 +5,9 @@ if [[ -n "$SERVER_NAME" ]]; then
 fi
 
 if [[ -n "$GLAD_LATEST" ]]; then
-  pip install --upgrade --force-reinstall git+https://github.com/dav1dde/glad.git@master
+    pip install --upgrade --force-reinstall https://github.com/dav1dde/glad/archive/master.zip
 fi
 
 python -m gladweb init
 
 exec gunicorn -c gunicorn.config.py 'gladweb:create_application(debug=False, verbose=None)' "$@"
-
