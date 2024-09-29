@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir --use-pep517 \
     eventlet>0.33.3 \
     flask \
     Flask-AutoIndex \
-    raven[flask] \
+    sentry-sdk[flask] \
     lxml
 
 COPY docker/* ./

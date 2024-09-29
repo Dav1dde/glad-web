@@ -116,8 +116,8 @@ def generate():
         url = glad_generate()
     except Exception as e:
         import gladweb
-        if gladweb.sentry is not None:
-            gladweb.sentry.captureException()
+        if gladweb.sentry_sdk is not None:
+            gladweb.sentry_sdk.capture_exception(e)
 
         if isinstance(e, GladWebException):
             current_app.logger.info('user error: %s', e)

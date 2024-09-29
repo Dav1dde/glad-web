@@ -21,10 +21,9 @@ except ImportError:
     from werkzeug.middleware.proxy_fix import ProxyFix
 
 try:
-    from raven.contrib.flask import Sentry
-    sentry = Sentry()
+    import sentry_sdk
 except ImportError:
-    sentry = None
+    sentry_sdk = None
 
 
 logger = logging.getLogger('gladweb')
@@ -125,8 +124,10 @@ def create_application(debug=False, verbose=False):
     if verbose or (not app.debug and verbose is None):
         setup_logging()
 
-    if sentry is not None and app.config.get('SENTRY_CONFIG'):
-        sentry.init_app(app, logging=True, level=logging.WARN)
+    sentry_config = app.config.get('SENTRY_CONFIG', {})
+    if sentry_sdk is not None and sentry_config:
+        logger.info('Initializing Sentry: %s', sentry_config)
+        sentry_sdk.init(**sentry_config)
 
     if app.config['CRON'] > 0:
         cron = RefreshCron(app.config['CRON'], app)
