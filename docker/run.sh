@@ -12,6 +12,10 @@ if [[ -n "${GLAD_LATEST}" ]]; then
     pip install --upgrade --force-reinstall --use-pep517 https://github.com/dav1dde/glad/archive/glad2.zip
 fi
 
+if [[ -n "${PYTHON_PACKAGES}" ]]; then
+    pip install --upgrade --force-reinstall --use-pep517 ${PYTHON_PACKAGES}
+fi
+
 python -m gladweb init
 
 exec gunicorn -c gunicorn.config.py 'gladweb:create_application(debug=False, verbose=None)' "$@"
