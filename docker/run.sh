@@ -13,7 +13,7 @@ if [[ -n "${GLAD_LATEST}" ]]; then
 fi
 
 if [[ -n "${PYTHON_PACKAGES}" ]]; then
-    pip install --upgrade --force-reinstall --use-pep517 ${PYTHON_PACKAGES}
+    pip install --upgrade --use-pep517 ${PYTHON_PACKAGES}
 fi
 
 python -m gladweb init
